@@ -1,0 +1,675 @@
+"use client";
+
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Separator } from "@/components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Mail,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Eye,
+  MessageSquare,
+  DollarSign,
+  MapPin,
+  Calendar,
+  Building2,
+} from "lucide-react";
+import Link from "next/link";
+
+// Mock proposals data
+const mockProposals = [
+  {
+    id: "1",
+    company: {
+      name: "TechCorp Solutions",
+      logo: "/generic-company-logo.png",
+      industry: "Technology",
+    },
+    position: "Senior React Developer",
+    budget: "$120/hour",
+    budgetType: "hourly",
+    location: "San Francisco, CA",
+    remote: "Hybrid",
+    duration: "6+ months",
+    startDate: "2024-02-01",
+    status: "pending",
+    receivedDate: "2024-01-15",
+    message:
+      "Hi Sarah, we're impressed by your React expertise and would love to discuss a senior developer role with our growing team. We're building the next generation of fintech products...",
+    requirements:
+      "• 5+ years React experience\n• TypeScript proficiency\n• Experience with Node.js\n• Strong problem-solving skills",
+    benefits:
+      "• Competitive salary + equity\n• Health insurance\n• Flexible work arrangements\n• $2000 learning budget",
+    companyDescription:
+      "Leading fintech company focused on innovative payment solutions.",
+  },
+  {
+    id: "2",
+    company: {
+      name: "StartupXYZ",
+      logo: "/generic-company-logo.png",
+      industry: "E-commerce",
+    },
+    position: "Full-Stack Developer",
+    budget: "$110/hour",
+    budgetType: "hourly",
+    location: "Remote",
+    remote: "Fully Remote",
+    duration: "3-6 months",
+    startDate: "2024-01-25",
+    status: "pending",
+    receivedDate: "2024-01-12",
+    message:
+      "Hello Sarah! Your portfolio caught our attention. We're looking for a talented full-stack developer to help us scale our e-commerce platform...",
+    requirements:
+      "• Full-stack development experience\n• React and Node.js\n• Database design\n• API development",
+    benefits:
+      "• Remote-first culture\n• Flexible hours\n• Stock options\n• Top-tier equipment",
+    companyDescription:
+      "Fast-growing e-commerce startup disrupting the retail space.",
+  },
+  {
+    id: "3",
+    company: {
+      name: "Enterprise Corp",
+      logo: "/generic-company-logo.png",
+      industry: "Enterprise Software",
+    },
+    position: "Lead Frontend Developer",
+    budget: "$140/hour",
+    budgetType: "hourly",
+    location: "New York, NY",
+    remote: "On-site",
+    duration: "12+ months",
+    startDate: "2024-02-15",
+    status: "viewed",
+    receivedDate: "2024-01-08",
+    message:
+      "Dear Sarah, we have an exciting leadership opportunity for an experienced frontend developer. You would be leading a team of 5 developers...",
+    requirements:
+      "• 7+ years frontend experience\n• Leadership experience\n• React ecosystem expertise\n• Mentoring skills",
+    benefits:
+      "• Leadership role\n• Comprehensive benefits\n• 401k matching\n• Career advancement",
+    companyDescription:
+      "Established enterprise software company serving Fortune 500 clients.",
+  },
+];
+
+export default function ProposalsPage() {
+  const [activeTab, setActiveTab] = useState("received");
+  const [selectedProposal, setSelectedProposal] = useState<
+    (typeof mockProposals)[0] | null
+  >(null);
+  const [responseMessage, setResponseMessage] = useState("");
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "pending":
+        return <Clock className="h-4 w-4 text-secondary" />;
+      case "viewed":
+        return <Eye className="h-4 w-4 text-blue-500" />;
+      case "accepted":
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "declined":
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      default:
+        return <Mail className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "secondary";
+      case "viewed":
+        return "default";
+      case "accepted":
+        return "default";
+      case "declined":
+        return "destructive";
+      default:
+        return "secondary";
+    }
+  };
+
+  const handleResponse = (
+    proposalId: string,
+    response: "accept" | "decline"
+  ) => {
+    console.log(`${response} proposal ${proposalId}:`, responseMessage);
+    // In real app: send response to backend
+    alert(`Proposal ${response}ed successfully!`);
+    setSelectedProposal(null);
+    setResponseMessage("");
+  };
+
+  const pendingProposals = mockProposals.filter((p) => p.status === "pending");
+  const viewedProposals = mockProposals.filter((p) => p.status === "viewed");
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="border-b border-border bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">
+                  TF
+                </span>
+              </div>
+              <span className="text-xl font-bold text-foreground">
+                TalentFirst
+              </span>
+            </Link>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" asChild>
+                <Link href="/profile/me">My Profile</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/browse-talent">Browse More</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            My Proposals
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            Manage proposals from companies interested in working with you
+          </p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid md:grid-cols-4 gap-4 mb-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Total Received
+                  </p>
+                  <p className="text-2xl font-bold">{mockProposals.length}</p>
+                </div>
+                <Mail className="h-8 w-8 text-primary" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Pending
+                  </p>
+                  <p className="text-2xl font-bold">
+                    {pendingProposals.length}
+                  </p>
+                </div>
+                <Clock className="h-8 w-8 text-secondary" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Response Rate
+                  </p>
+                  <p className="text-2xl font-bold">85%</p>
+                </div>
+                <MessageSquare className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Avg. Rate
+                  </p>
+                  <p className="text-2xl font-bold">$123/hr</p>
+                </div>
+                <DollarSign className="h-8 w-8 text-primary" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
+          <TabsList>
+            <TabsTrigger value="received">
+              All Proposals ({mockProposals.length})
+            </TabsTrigger>
+            <TabsTrigger value="pending">
+              Pending ({pendingProposals.length})
+            </TabsTrigger>
+            <TabsTrigger value="responded">Responded (0)</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="received" className="space-y-4">
+            {mockProposals.map((proposal) => (
+              <Card
+                key={proposal.id}
+                className="hover:shadow-md transition-shadow"
+              >
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage
+                        src={proposal.company.logo || "/placeholder.svg"}
+                      />
+                      <AvatarFallback>
+                        {proposal.company.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">
+                              {proposal.company.name}
+                            </h3>
+                            <Badge variant="outline" className="text-xs">
+                              {proposal.company.industry}
+                            </Badge>
+                          </div>
+                          <p className="text-lg font-medium text-primary">
+                            {proposal.position}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(proposal.status)}
+                          <Badge
+                            variant={getStatusColor(proposal.status)}
+                          >
+                            {proposal.status}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-4 gap-4 mb-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          <span>{proposal.budget}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>{proposal.remote}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span>{proposal.duration}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span>
+                            {new Date(
+                              proposal.receivedDate
+                            ).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="text-muted-foreground mb-4 line-clamp-2">
+                        {proposal.message}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">
+                          Start:{" "}
+                          {new Date(proposal.startDate).toLocaleDateString()}
+                        </p>
+                        <div className="flex gap-2">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setSelectedProposal(proposal)}
+                              >
+                                View Details
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                              <DialogHeader>
+                                <DialogTitle className="flex items-center gap-2">
+                                  <Building2 className="h-5 w-5" />
+                                  {selectedProposal?.position} at{" "}
+                                  {selectedProposal?.company.name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Proposal received on{" "}
+                                  {selectedProposal &&
+                                    new Date(
+                                      selectedProposal.receivedDate
+                                    ).toLocaleDateString()}
+                                </DialogDescription>
+                              </DialogHeader>
+
+                              {selectedProposal && (
+                                <div className="space-y-6">
+                                  {/* Company Info */}
+                                  <div className="flex items-center gap-4">
+                                    <Avatar className="h-16 w-16">
+                                      <AvatarImage
+                                        src={
+                                          selectedProposal.company.logo ||
+                                          "/placeholder.svg"
+                                        }
+                                      />
+                                      <AvatarFallback className="text-xl">
+                                        {selectedProposal.company.name
+                                          .split(" ")
+                                          .map((n) => n[0])
+                                          .join("")}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                      <h3 className="font-semibold text-lg">
+                                        {selectedProposal.company.name}
+                                      </h3>
+                                      <p className="text-muted-foreground">
+                                        {selectedProposal.company.industry}
+                                      </p>
+                                      <p className="text-sm text-muted-foreground">
+                                        {selectedProposal.companyDescription}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <Separator />
+
+                                  {/* Opportunity Details */}
+                                  <div>
+                                    <h4 className="font-semibold mb-3">
+                                      Opportunity Details
+                                    </h4>
+                                    <div className="grid md:grid-cols-2 gap-4 text-sm">
+                                      <div>
+                                        <span className="font-medium">
+                                          Position:
+                                        </span>
+                                        <p className="text-muted-foreground">
+                                          {selectedProposal.position}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">
+                                          Budget:
+                                        </span>
+                                        <p className="text-muted-foreground">
+                                          {selectedProposal.budget}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">
+                                          Location:
+                                        </span>
+                                        <p className="text-muted-foreground">
+                                          {selectedProposal.location}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">
+                                          Work Style:
+                                        </span>
+                                        <p className="text-muted-foreground">
+                                          {selectedProposal.remote}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">
+                                          Duration:
+                                        </span>
+                                        <p className="text-muted-foreground">
+                                          {selectedProposal.duration}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">
+                                          Start Date:
+                                        </span>
+                                        <p className="text-muted-foreground">
+                                          {new Date(
+                                            selectedProposal.startDate
+                                          ).toLocaleDateString()}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <Separator />
+
+                                  {/* Message */}
+                                  <div>
+                                    <h4 className="font-semibold mb-3">
+                                      Message
+                                    </h4>
+                                    <p className="text-muted-foreground whitespace-pre-line">
+                                      {selectedProposal.message}
+                                    </p>
+                                  </div>
+
+                                  {/* Requirements */}
+                                  <div>
+                                    <h4 className="font-semibold mb-3">
+                                      Requirements
+                                    </h4>
+                                    <p className="text-muted-foreground whitespace-pre-line">
+                                      {selectedProposal.requirements}
+                                    </p>
+                                  </div>
+
+                                  {/* Benefits */}
+                                  <div>
+                                    <h4 className="font-semibold mb-3">
+                                      What They Offer
+                                    </h4>
+                                    <p className="text-muted-foreground whitespace-pre-line">
+                                      {selectedProposal.benefits}
+                                    </p>
+                                  </div>
+
+                                  {/* Response Section */}
+                                  {selectedProposal.status === "pending" && (
+                                    <>
+                                      <Separator />
+                                      <div>
+                                        <Label htmlFor="response">
+                                          Your Response (Optional)
+                                        </Label>
+                                        <Textarea
+                                          id="response"
+                                          placeholder="Add a personal message with your response..."
+                                          value={responseMessage}
+                                          onChange={(e) =>
+                                            setResponseMessage(e.target.value)
+                                          }
+                                          rows={3}
+                                          className="mt-2"
+                                        />
+                                      </div>
+
+                                      <div className="flex gap-3">
+                                        <Button
+                                          onClick={() =>
+                                            handleResponse(
+                                              selectedProposal.id,
+                                              "accept"
+                                            )
+                                          }
+                                          className="flex-1"
+                                        >
+                                          <CheckCircle className="mr-2 h-4 w-4" />
+                                          Accept Proposal
+                                        </Button>
+                                        <Button
+                                          variant="outline"
+                                          onClick={() =>
+                                            handleResponse(
+                                              selectedProposal.id,
+                                              "decline"
+                                            )
+                                          }
+                                          className="flex-1"
+                                        >
+                                          <XCircle className="mr-2 h-4 w-4" />
+                                          Decline
+                                        </Button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </DialogContent>
+                          </Dialog>
+
+                          {proposal.status === "pending" && (
+                            <>
+                              <Button size="sm">
+                                <CheckCircle className="mr-2 h-4 w-4" />
+                                Accept
+                              </Button>
+                              <Button size="sm" variant="outline">
+                                <XCircle className="mr-2 h-4 w-4" />
+                                Decline
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="pending" className="space-y-4">
+            {pendingProposals.map((proposal) => (
+              <Card
+                key={proposal.id}
+                className="hover:shadow-md transition-shadow border-l-4 border-l-secondary"
+              >
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage
+                        src={proposal.company.logo || "/placeholder.svg"}
+                      />
+                      <AvatarFallback>
+                        {proposal.company.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold">
+                            {proposal.company.name}
+                          </h3>
+                          <p className="text-lg font-medium text-primary">
+                            {proposal.position}
+                          </p>
+                        </div>
+                        <Badge variant="secondary">Needs Response</Badge>
+                      </div>
+
+                      <div className="grid md:grid-cols-3 gap-4 mb-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                          <span>{proposal.budget}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span>{proposal.remote}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span>{proposal.duration}</span>
+                        </div>
+                      </div>
+
+                      <p className="text-muted-foreground mb-4 line-clamp-2">
+                        {proposal.message}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">
+                          Received{" "}
+                          {new Date(proposal.receivedDate).toLocaleDateString()}
+                        </p>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline">
+                            View Details
+                          </Button>
+                          <Button size="sm">
+                            <CheckCircle className="mr-2 h-4 w-4" />
+                            Accept
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            <XCircle className="mr-2 h-4 w-4" />
+                            Decline
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="responded" className="space-y-4">
+            <div className="text-center py-12">
+              <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                No responded proposals yet
+              </h3>
+              <p className="text-muted-foreground">
+                Proposals you've accepted or declined will appear here
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
