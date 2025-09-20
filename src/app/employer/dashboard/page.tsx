@@ -350,7 +350,7 @@ export default function EmployerDashboard() {
                             {proposal.talent.name}
                           </span>
                           <Badge
-                            variant={getStatusColor(proposal.status) as any}
+                            variant={getStatusColor(proposal.status)}
                           >
                             {proposal.status}
                           </Badge>
@@ -416,7 +416,7 @@ export default function EmployerDashboard() {
                           <div className="flex items-center gap-2">
                             {getStatusIcon(proposal.status)}
                             <Badge
-                              variant={getStatusColor(proposal.status) as any}
+                              variant={getStatusColor(proposal.status)}
                             >
                               {proposal.status}
                             </Badge>
@@ -527,7 +527,7 @@ export default function EmployerDashboard() {
                       <div className="flex flex-wrap gap-1">
                         {talent.skills.map((skill, index) => (
                           <Badge
-                            key={index}
+                            key={skill + index}
                             variant="secondary"
                             className="text-xs"
                           >

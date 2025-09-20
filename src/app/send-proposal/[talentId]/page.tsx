@@ -45,7 +45,7 @@ const mockTalent = {
 export default function SendProposalPage({
   params,
 }: {
-  params: { talentId: string };
+  readonly params: { readonly talentId: string };
 }) {
   const [formData, setFormData] = useState({
     position: "",

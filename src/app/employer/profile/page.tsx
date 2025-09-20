@@ -334,7 +334,7 @@ export default function CompanyProfilePage() {
                 <div className="flex flex-wrap gap-2">
                   {formData.benefits.map((benefit, index) => (
                     <Badge
-                      key={index}
+                      key={benefit + index}
                       variant="secondary"
                       className="flex items-center gap-1"
                     >

@@ -314,7 +314,7 @@ export default function ProposalsPage() {
                         <div className="flex items-center gap-2">
                           {getStatusIcon(proposal.status)}
                           <Badge
-                            variant={getStatusColor(proposal.status) as any}
+                            variant={getStatusColor(proposal.status)}
                           >
                             {proposal.status}
                           </Badge>

@@ -267,7 +267,7 @@ export default function BrowseTalentPage() {
 
                   <div className="flex flex-wrap gap-1">
                     {talent.skills.slice(0, 3).map((skill, skillIndex) => (
-                      <Badge key={skillIndex} variant="secondary" className="text-xs">
+                      <Badge key={skill + skillIndex} variant="secondary" className="text-xs">
                         {skill}
                       </Badge>
                     ))}
