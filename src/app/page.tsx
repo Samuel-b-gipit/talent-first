@@ -87,7 +87,7 @@ export default function HomePage() {
               className="text-lg px-8 bg-transparent"
               asChild
             >
-              <Link href="/hire-talent">
+              <Link href="/for-employers">
                 <Building2 className="mr-2 h-5 w-5" />
                 I'm Hiring Talent
               </Link>
