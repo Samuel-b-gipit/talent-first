@@ -1,14 +1,147 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// User Model - Common fields for both talent and employers
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  talentProfile   TalentProfile?
+  employerProfile EmployerProfile?
+  sentProposals   Proposal[]       @relation("EmployerProposals")
+  receivedProposals Proposal[]     @relation("TalentProposals")
+  sentMessages    Message[]        @relation("SentMessages")
+  receivedMessages Message[]       @relation("ReceivedMessages")
+  sessions        Session[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  TALENT
+  EMPLOYER
+}
+
+// Talent Profile Model
+model TalentProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  title       String
+  location    String
+  skills      String[]
+  experience  String
+  rate        Float
+  availability String
+  bio         String   @db.Text
+  education   Json?
+  workHistory Json?
+  portfolio   Json?
+  rating      Float?   @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("talent_profiles")
+}
+
+// Employer/Company Profile Model
+model EmployerProfile {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  companyName      String
+  industry         String
+  size             String
+  logo             String?
+  website          String?
+  location         String
+  description      String   @db.Text
+  foundedYear      Int?
+  socialMediaLinks Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("employer_profiles")
+}
+
+// Proposal Model
+model Proposal {
+  id                   String         @id @default(cuid())
+  employerId           String
+  talentId             String
+  jobTitle             String
+  projectDescription   String         @db.Text
+  compensationDetails  String
+  startDate            String?
+  duration             String?
+  location             String
+  status               ProposalStatus @default(PENDING)
+  message              String         @db.Text
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  // Relations
+  employer User      @relation("EmployerProposals", fields: [employerId], references: [id], onDelete: Cascade)
+  talent   User      @relation("TalentProposals", fields: [talentId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@map("proposals")
+}
+
+enum ProposalStatus {
+  PENDING
+  VIEWED
+  ACCEPTED
+  DECLINED
+  NEGOTIATING
+}
+
+// Message Model
+model Message {
+  id         String   @id @default(cuid())
+  proposalId String
+  senderId   String
+  receiverId String
+  content    String   @db.Text
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  // Relations
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  sender   User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// Session Model - For server-side authentication
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
 }
