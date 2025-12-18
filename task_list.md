@@ -13,29 +13,29 @@ This plan outlines implementing a backend using PostgreSQL database, Prisma ORM,
 
 ### Detailed Task List
 
-- [ ] **Database Setup**
+- [x] **Database Setup**
 
-  - [ ] Install Prisma and PostgreSQL dependencies
-  - [ ] Configure PostgreSQL connection in environment variables
-  - [ ] Initialize Prisma schema file
-  - [ ] Define User model with id, email, password, name, role, createdAt, updatedAt
-  - [ ] Define TalentProfile model with userId, title, location, skills, experience, rate, availability, bio, education, workHistory, portfolio, rating
-  - [ ] Define EmployerProfile model with userId, companyName, industry, size, logo, website, location, description, foundedYear, socialMediaLinks
-  - [ ] Define Proposal model with id, employerId, talentId, jobTitle, projectDescription, compensationDetails, startDate, duration, location, status, message, createdAt, updatedAt
-  - [ ] Define Message model with id, proposalId, senderId, receiverId, content, read, createdAt
-  - [ ] Define Session model with id, userId, token, expiresAt, createdAt
-  - [ ] Run Prisma generate and push to create database tables
+  - [x] Install Prisma and PostgreSQL dependencies
+  - [x] Configure PostgreSQL connection in environment variables
+  - [x] Initialize Prisma schema file
+  - [x] Define User model with id, email, password, name, role, createdAt, updatedAt
+  - [x] Define TalentProfile model with userId, title, location, skills, experience, rate, availability, bio, education, workHistory, portfolio, rating
+  - [x] Define EmployerProfile model with userId, companyName, industry, size, logo, website, location, description, foundedYear, socialMediaLinks
+  - [x] Define Proposal model with id, employerId, talentId, jobTitle, projectDescription, compensationDetails, startDate, duration, location, status, message, createdAt, updatedAt
+  - [x] Define Message model with id, proposalId, senderId, receiverId, content, read, createdAt
+  - [x] Define Session model with id, userId, token, expiresAt, createdAt
+  - [x] Run Prisma generate and push to create database tables
 
-- [ ] **Authentication System**
+- [x] **Authentication System**
 
-  - [ ] Install bcryptjs and jsonwebtoken libraries
-  - [ ] Create /api/auth/register route with POST handler for user registration
-  - [ ] Implement password hashing with bcrypt in register route
-  - [ ] Create /api/auth/login route with POST handler for user login
-  - [ ] Implement session token generation and httpOnly cookie setting in login route
-  - [ ] Create /api/auth/logout route to clear session cookie
-  - [ ] Add middleware for session verification on protected routes
-  - [ ] Update login/signup pages to use API instead of mock
+  - [x] Install bcryptjs and jsonwebtoken libraries
+  - [x] Create /api/auth/register route with POST handler for user registration
+  - [x] Implement password hashing with bcrypt in register route
+  - [x] Create /api/auth/login route with POST handler for user login
+  - [x] Implement session token generation and httpOnly cookie setting in login route
+  - [x] Create /api/auth/logout route to clear session cookie
+  - [x] Add middleware for session verification on protected routes
+  - [x] Update login/signup pages to use API instead of mock
 
 - [ ] **Talent Profile API**
 
@@ -84,4 +84,3 @@ This plan outlines implementing a backend using PostgreSQL database, Prisma ORM,
   - [ ] Add email notifications for proposals/messages
   - [ ] Implement password reset functionality
   - [ ] Add analytics tracking for dashboard metrics
-

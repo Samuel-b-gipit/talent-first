@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,7 +14,6 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,437 +21,208 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Send, DollarSign, MapPin, Star } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, UserCircle, Building2 } from "lucide-react";
 import Link from "next/link";
 
-// Mock talent data - in real app, this would be fetched based on talentId
-const mockTalent = {
-  id: "1",
-  name: "Sarah Chen",
-  title: "Senior Full-Stack Developer",
-  location: "San Francisco, CA",
-  skills: ["React", "Node.js", "TypeScript", "AWS"],
-  experience: "6-8 years",
-  rate: 120,
-  rating: 4.9,
-  reviewCount: 23,
-  bio: "Passionate full-stack developer with 6+ years of experience building scalable web applications.",
-  avatar: "/professional-headshot.png",
-};
-
-export default function SendProposalPage({
-  params,
-}: {
-  readonly params: { readonly talentId: string };
-}) {
+export default function SignupPage() {
+  const router = useRouter();
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    position: "",
-    company: "TechCorp Solutions",
-    projectType: "full-time",
-    budget: "",
-    budgetType: "hourly",
-    startDate: "",
-    duration: "",
-    location: "San Francisco, CA",
-    remote: "hybrid",
-    message: "",
-    requirements: "",
-    benefits: "",
+    email: "",
+    password: "",
+    name: "",
+    role: "TALENT" as "TALENT" | "EMPLOYER",
   });
   const [isLoading, setIsLoading] = useState(false);
-
-  const talent = mockTalent; // In real app: fetch talent by params.talentId
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // Simulate proposal sending
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-    console.log("Proposal sent:", { talentId: params.talentId, ...formData });
-    setIsLoading(false);
+      const data = await response.json();
 
-    // In real app: redirect to success page or dashboard
-    alert("Proposal sent successfully!");
-  };
+      if (!response.ok) {
+        setError(data.error || "Registration failed");
+        setIsLoading(false);
+        return;
+      }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+      // Redirect based on user role
+      if (data.user.role === "EMPLOYER") {
+        router.push("/employer/profile");
+      } else {
+        router.push("/create-profile");
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
-                  TF
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">
-                TalentFirst
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2 mb-6">
+            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+              <span className="text-primary-foreground font-bold text-sm">
+                TF
               </span>
-            </Link>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/employer/dashboard">Dashboard</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/browse-talent">Browse Talent</Link>
-              </Button>
             </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Back Button */}
-        <Button variant="ghost" className="mb-6" asChild>
-          <Link href={`/profile/${talent.id}`}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Profile
+            <span className="text-xl font-bold text-foreground">
+              TalentFirst
+            </span>
           </Link>
-        </Button>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Talent Summary */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-8">
-              <CardHeader>
-                <CardTitle>Sending Proposal To</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 mb-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src={talent.avatar || "/placeholder.svg"} />
-                    <AvatarFallback className="text-xl">
-                      {talent.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="font-semibold text-lg">{talent.name}</h3>
-                    <p className="text-muted-foreground">{talent.title}</p>
-                    <div className="flex items-center gap-1 mt-1">
-                      <Star className="h-4 w-4 fill-secondary text-secondary" />
-                      <span className="text-sm">
-                        {talent.rating} ({talent.reviewCount})
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    {talent.location}
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <DollarSign className="h-4 w-4" />${talent.rate}/hour
-                  </div>
-                </div>
-
-                <Separator className="my-4" />
-
-                <div>
-                  <p className="text-sm font-medium mb-2">Skills</p>
-                  <div className="flex flex-wrap gap-1">
-                    {talent.skills.map((skill, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="text-xs"
-                      >
-                        {skill}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator className="my-4" />
-
-                <p className="text-sm text-muted-foreground">{talent.bio}</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Proposal Form */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Send className="h-5 w-5" />
-                  Send Proposal
-                </CardTitle>
-                <CardDescription>
-                  Create a compelling proposal to attract{" "}
-                  {talent.name.split(" ")[0]} to your opportunity
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Basic Information */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">
-                      Opportunity Details
-                    </h3>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="position">Position Title</Label>
-                        <Input
-                          id="position"
-                          placeholder="e.g., Senior React Developer"
-                          value={formData.position}
-                          onChange={(e) =>
-                            handleInputChange("position", e.target.value)
-                          }
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="company">Company</Label>
-                        <Input
-                          id="company"
-                          value={formData.company}
-                          onChange={(e) =>
-                            handleInputChange("company", e.target.value)
-                          }
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="projectType">Project Type</Label>
-                        <Select
-                          value={formData.projectType}
-                          onValueChange={(value) =>
-                            handleInputChange("projectType", value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="full-time">
-                              Full-time Position
-                            </SelectItem>
-                            <SelectItem value="part-time">
-                              Part-time Position
-                            </SelectItem>
-                            <SelectItem value="contract">
-                              Contract Work
-                            </SelectItem>
-                            <SelectItem value="freelance">
-                              Freelance Project
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="remote">Work Arrangement</Label>
-                        <Select
-                          value={formData.remote}
-                          onValueChange={(value) =>
-                            handleInputChange("remote", value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="remote">Fully Remote</SelectItem>
-                            <SelectItem value="hybrid">Hybrid</SelectItem>
-                            <SelectItem value="onsite">On-site</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location</Label>
-                      <Input
-                        id="location"
-                        placeholder="e.g., San Francisco, CA"
-                        value={formData.location}
-                        onChange={(e) =>
-                          handleInputChange("location", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Budget & Timeline */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Budget & Timeline</h3>
-
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="budgetType">Budget Type</Label>
-                        <Select
-                          value={formData.budgetType}
-                          onValueChange={(value) =>
-                            handleInputChange("budgetType", value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="hourly">Hourly Rate</SelectItem>
-                            <SelectItem value="fixed">Fixed Price</SelectItem>
-                            <SelectItem value="salary">
-                              Annual Salary
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="budget">
-                          Budget (
-                          {formData.budgetType === "hourly"
-                            ? "$/hour"
-                            : formData.budgetType === "salary"
-                            ? "$/year"
-                            : "$"}
-                          )
-                        </Label>
-                        <Input
-                          id="budget"
-                          placeholder={
-                            formData.budgetType === "hourly"
-                              ? "120"
-                              : formData.budgetType === "salary"
-                              ? "150000"
-                              : "5000"
-                          }
-                          value={formData.budget}
-                          onChange={(e) =>
-                            handleInputChange("budget", e.target.value)
-                          }
-                          type="number"
-                          required
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="duration">Duration</Label>
-                        <Input
-                          id="duration"
-                          placeholder="e.g., 3 months, Ongoing"
-                          value={formData.duration}
-                          onChange={(e) =>
-                            handleInputChange("duration", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="startDate">Preferred Start Date</Label>
-                      <Input
-                        id="startDate"
-                        type="date"
-                        value={formData.startDate}
-                        onChange={(e) =>
-                          handleInputChange("startDate", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <Separator />
-
-                  {/* Message */}
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Proposal Message</h3>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Personal Message</Label>
-                      <Textarea
-                        id="message"
-                        placeholder={`Hi ${
-                          talent.name.split(" ")[0]
-                        },\n\nI came across your profile and was impressed by your experience with ${talent.skills
-                          .slice(0, 2)
-                          .join(
-                            " and "
-                          )}. We have an exciting opportunity that I think would be a great fit for your skills...\n\nLooking forward to hearing from you!`}
-                        value={formData.message}
-                        onChange={(e) =>
-                          handleInputChange("message", e.target.value)
-                        }
-                        rows={6}
-                        required
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Write a personalized message explaining why you're
-                        interested in working with {talent.name.split(" ")[0]}
-                      </p>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="requirements">Key Requirements</Label>
-                      <Textarea
-                        id="requirements"
-                        placeholder="• 5+ years of React experience&#10;• Experience with Node.js and TypeScript&#10;• Strong problem-solving skills&#10;• Excellent communication"
-                        value={formData.requirements}
-                        onChange={(e) =>
-                          handleInputChange("requirements", e.target.value)
-                        }
-                        rows={4}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="benefits">What We Offer</Label>
-                      <Textarea
-                        id="benefits"
-                        placeholder="• Competitive salary and equity&#10;• Health, dental, and vision insurance&#10;• Flexible work arrangements&#10;• Professional development budget"
-                        value={formData.benefits}
-                        onChange={(e) =>
-                          handleInputChange("benefits", e.target.value)
-                        }
-                        rows={4}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Submit */}
-                  <div className="flex gap-4 pt-4">
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={isLoading}
-                      className="flex-1"
-                    >
-                      {isLoading ? "Sending Proposal..." : "Send Proposal"}
-                    </Button>
-                    <Button type="button" variant="outline" size="lg" asChild>
-                      <Link href={`/profile/${talent.id}`}>Cancel</Link>
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            Create your account
+          </h1>
+          <p className="text-muted-foreground">
+            Join TalentFirst and start your journey
+          </p>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Sign Up</CardTitle>
+            <CardDescription>
+              Choose your account type and enter your details
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <div className="bg-destructive/10 text-destructive border border-destructive/20 rounded-md p-3 flex items-start gap-2">
+                  <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                  <p className="text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Account Type Selection */}
+              <div className="space-y-2">
+                <Label>I am a...</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: "TALENT" })}
+                    className={`flex flex-col items-center gap-2 p-4 border-2 rounded-lg transition-colors ${
+                      formData.role === "TALENT"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <UserCircle className="h-8 w-8" />
+                    <span className="font-medium">Talent</span>
+                    <span className="text-xs text-muted-foreground text-center">
+                      Looking for opportunities
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData({ ...formData, role: "EMPLOYER" })
+                    }
+                    className={`flex flex-col items-center gap-2 p-4 border-2 rounded-lg transition-colors ${
+                      formData.role === "EMPLOYER"
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <Building2 className="h-8 w-8" />
+                    <span className="font-medium">Employer</span>
+                    <span className="text-xs text-muted-foreground text-center">
+                      Hiring talent
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password (min. 8 characters)"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating account..." : "Create Account"}
+              </Button>
+            </form>
+
+            <div className="mt-6">
+              <Separator className="my-4" />
+              <p className="text-center text-sm text-muted-foreground">
+                Already have an account?{" "}
+                <Link
+                  href="/login"
+                  className="text-primary hover:underline font-medium"
+                >
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
