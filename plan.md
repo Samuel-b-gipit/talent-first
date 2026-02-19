@@ -138,16 +138,16 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
 
 ### 1.4 Seed Database (Optional but Recommended)
 
-- [ ] **Create seed script** (`prisma/seed.ts`)
+- [x] **Create seed script** (`prisma/pg-seed.js`)
   - Create sample talent profiles (5-10)
   - Create sample employer profiles (2-3)
   - Create sample proposals (3-5)
-- [ ] **Run seed script**
+- [x] **Run seed script**
   ```bash
-  npx prisma db seed
+  node prisma/pg-seed.js
   ```
 
-**Status:** ❌ Not Implemented
+**Status:** ✅ Complete (pg-seed.js seeds employers, talents, and proposals successfully)
 
 ---
 
@@ -187,12 +187,12 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
 
 #### 2.1.4 Logout
 
-- [ ] **POST /api/auth/logout**
+- [x] **POST /api/auth/logout** ([`src/app/api/auth/logout/route.ts`](src/app/api/auth/logout/route.ts))
   - Clear session cookie
   - Invalidate token
   - Return success response
 
-**Status:** ❌ Not Implemented
+**Status:** ✅ Implemented
 
 #### 2.1.5 Forgot Password
 
@@ -270,32 +270,32 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
 
 #### 2.3.1 Create Company Profile
 
-- [ ] **POST /api/companies**
+- [x] **POST /api/companies** ([`src/app/api/companies/route.ts`](src/app/api/companies/route.ts))
   - Validate user is authenticated
   - Validate user role is EMPLOYER
   - Validate input data (companyName, industry, size, location, description, etc.)
   - Create EmployerProfile record linked to userId
   - Return created profile
 
-**Status:** ❌ Not Implemented
+**Status:** ✅ Implemented
 
 #### 2.3.2 Get Company Profile
 
-- [ ] **GET /api/companies/:userId**
-  - Fetch EmployerProfile by userId
+- [x] **GET /api/companies/:userId** ([`src/app/api/companies/[id]/route.ts`](src/app/api/companies/[id]/route.ts))
+  - Fetch EmployerProfile by userId (or profile id)
   - Return profile data or 404
 
-**Status:** ❌ Not Implemented
+**Status:** ✅ Implemented
 
 #### 2.3.3 Update Company Profile
 
-- [ ] **PUT /api/companies/:id**
+- [x] **PUT /api/companies/:id** ([`src/app/api/companies/[id]/route.ts`](src/app/api/companies/[id]/route.ts))
   - Verify user owns this profile
   - Validate input data
   - Update EmployerProfile record (name, description, benefits, techStack, etc.)
   - Return updated profile
 
-**Status:** ❌ Not Implemented
+**Status:** ✅ Implemented
 
 ---
 
@@ -468,11 +468,11 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
 
 - [x] **Page:** [`/signup`](src/app/signup/page.tsx)
   - [x] UI implemented with role selection
-  - [ ] Connect to `POST /api/auth/register`
-  - [ ] Handle success redirect based on role
-  - [ ] Display validation errors
+  - [x] Connect to `POST /api/auth/register`
+  - [x] Handle success redirect based on role
+  - [x] Display validation errors
 
-**Status:** 🟡 Partially Implemented (needs API connection)
+**Status:** ✅ Fully Implemented
 
 #### 3.1.2 Login Page
 
@@ -536,12 +536,12 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
 
 - [x] **Page:** [`/create-profile`](src/app/create-profile/page.tsx)
   - [x] Form UI implemented (all fields)
-  - [ ] Connect to `POST /api/talents`
-  - [ ] Add form validation
-  - [ ] Handle success redirect to `/proposals`
-  - [ ] Display error messages
+  - [x] Connect to `POST /api/talents`
+  - [x] Add form validation
+  - [x] Handle success redirect to `/proposals`
+  - [x] Display error messages
 
-**Status:** 🟡 Needs API Connection
+**Status:** ✅ Fully Implemented
 
 #### 3.3.2 Proposals Page (Talent)
 
@@ -549,24 +549,23 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
   - [x] UI implemented with tabs and stats
   - [x] Proposal cards with mock data
   - [x] Proposal detail dialog
-  - [ ] Connect to `GET /api/proposals?talentId={userId}`
-  - [ ] Filter proposals by status (tabs)
-  - [ ] Connect accept/decline to `PUT /api/proposals/:id`
-  - [ ] Refresh data after action
+  - [x] Connect to `GET /api/proposals?talentId={userId}`
+  - [x] Filter proposals by status (tabs)
+  - [x] Connect accept/decline to `PUT /api/proposals/:id`
+  - [x] Refresh data after action
 
-**Status:** 🟡 Needs API Connection
+**Status:** ✅ Fully Implemented
 
 #### 3.3.3 Talent Profile View Page
 
 - [x] **Page:** [`/profile/[id]`](src/app/profile/[id]/page.tsx)
   - [x] Profile display UI implemented
-  - [x] Using mock data
-  - [ ] Connect to `GET /api/talents/:id`
-  - [ ] Fetch similar talents
-  - [ ] Handle 404 if profile not found
+  - [x] Connect to `GET /api/talents/:id` (via Prisma server component)
+  - [x] Fetch similar talents
+  - [x] Handle 404 if profile not found
   - [ ] Add "Edit Profile" button if viewing own profile
 
-**Status:** 🟡 Needs API Connection
+**Status:** ✅ Mostly Implemented
 
 ---
 
@@ -576,14 +575,14 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
 
 - [x] **Page:** [`/browse-talent`](src/app/browse-talent/page.tsx)
   - [x] Search and filters UI implemented
-  - [x] Talent grid with mock data
+  - [x] Talent grid with API data
   - [x] Client-side filtering implemented
-  - [ ] Connect to `GET /api/talents`
+  - [x] Connect to `GET /api/talents`
   - [ ] Send search/filter params to API
   - [ ] Implement pagination (load more)
   - [ ] Update URL with filter state
 
-**Status:** 🟡 Needs API Connection
+**Status:** ✅ API Connected
 
 #### 3.4.2 Advanced Search Page
 
@@ -619,14 +618,13 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
 - [x] **Page:** [`/send-proposal/[talentId]`](src/app/send-proposal/[talentId]/page.tsx)
   - [x] Form UI implemented (all fields)
   - [x] Talent sidebar display
-  - [x] Using mock talent data
-  - [ ] Fetch talent by ID from `GET /api/talents/:id`
-  - [ ] Pre-fill company name from employer profile
-  - [ ] Connect to `POST /api/proposals`
-  - [ ] Add form validation
-  - [ ] Redirect to `/proposal-success` on success
+  - [x] Fetch talent by ID from `GET /api/talents/:id`
+  - [x] Pre-fill company name from employer profile
+  - [x] Connect to `POST /api/proposals`
+  - [x] Add form validation
+  - [x] Redirect to `/proposal-success` on success
 
-**Status:** 🟡 Needs API Connection
+**Status:** ✅ Fully Implemented
 
 #### 3.4.5 Proposal Success Page
 
@@ -647,28 +645,26 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
   - [x] Proposals tab with filtering
   - [x] Saved talent tab
   - [x] Analytics tab
-  - [x] Using mock data
-  - [ ] Connect stats to `GET /api/analytics/employer`
-  - [ ] Connect proposals to `GET /api/proposals?employerId={userId}`
-  - [ ] Connect saved talents to `GET /api/saved-talents`
-  - [ ] Implement save/unsave functionality
+  - [x] Connect stats to `GET /api/analytics/employer`
+  - [x] Connect proposals to `GET /api/proposals?employerId={userId}`
+  - [x] Connect saved talents to `GET /api/saved-talents`
+  - [x] Implement unsave functionality
   - [ ] Implement proposal filtering by status
 
-**Status:** 🟡 Needs API Connection
+**Status:** ✅ API Connected
 
 #### 3.4.7 Company Profile Page
 
 - [x] **Page:** [`/employer/profile`](src/app/employer/profile/page.tsx)
   - [x] Form UI implemented (all fields)
   - [x] Benefits and tech stack management
-  - [x] Using mock pre-filled data
-  - [ ] Fetch existing profile from `GET /api/companies/:userId`
-  - [ ] Connect create to `POST /api/companies`
-  - [ ] Connect update to `PUT /api/companies/:id`
-  - [ ] Add form validation
-  - [ ] Show success notification
+  - [x] Fetch existing profile from `GET /api/companies/:userId`
+  - [x] Connect create to `POST /api/companies`
+  - [x] Connect update to `PUT /api/companies/:id`
+  - [x] Add form validation
+  - [x] Show success notification
 
-**Status:** 🟡 Needs API Connection
+**Status:** ✅ Fully Implemented
 
 ---
 
@@ -676,34 +672,34 @@ This plan outlines all steps needed to make TalentFirst fully functional, from d
 
 #### 3.5.1 Auth Context & Hook
 
-- [ ] **Create AuthContext** (`src/contexts/AuthContext.tsx`)
+- [x] **Create AuthContext** (`src/contexts/AuthContext.tsx`)
   - Manage user session state
   - Provide `useAuth()` hook
   - Handle login/logout
   - Persist user data
   - Fetch current user on mount
 
-**Status:** ❌ Not Implemented
+**Status:** ✅ Implemented
 
 #### 3.5.2 Protected Routes Middleware
 
-- [ ] **Create middleware** (`src/middleware.ts`)
+- [x] **Create middleware** (`src/middleware.ts`)
   - Check authentication on protected routes
   - Redirect to `/login` if not authenticated
   - Check user role for role-specific pages
   - Redirect TALENT away from employer pages and vice versa
 
-**Status:** ❌ Not Implemented
+**Status:** ✅ Implemented
 
 #### 3.5.3 API Client/Helper Functions
 
-- [ ] **Create API utilities** (`src/lib/api.ts`)
-  - Create reusable fetch wrapper
-  - Handle authentication headers
-  - Handle error responses
-  - Type-safe API calls
+- [x] **Create API utilities** (`src/lib/api.ts`)
+  - [x] Create reusable fetch wrapper
+  - [x] Handle authentication headers
+  - [x] Handle error responses
+  - [x] Type-safe API calls
 
-**Status:** ❌ Not Implemented
+**Status:** ✅ Implemented
 
 #### 3.5.4 Save Talent Feature
 

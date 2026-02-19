@@ -2,7 +2,9 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { api, type EmployerProfile } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,37 +30,91 @@ import { Building2, MapPin, Globe, Plus, X } from "lucide-react";
 import Link from "next/link";
 
 export default function CompanyProfilePage() {
+  const { user } = useAuth();
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    companyName: "TechCorp Solutions",
+    companyName: "",
     industry: "technology",
-    companySize: "50-200",
-    location: "San Francisco, CA",
-    website: "https://techcorp.com",
-    description:
-      "Leading technology company focused on innovative software solutions that help businesses scale and grow.",
-    culture:
-      "We believe in work-life balance, continuous learning, and building products that make a real impact.",
+    companySize: "51-200",
+    location: "",
+    website: "",
+    description: "",
+    culture: "",
     benefits: [] as string[],
     techStack: [] as string[],
     remotePolicy: "hybrid",
     isHiring: true,
-    foundedYear: "2018",
-    linkedin: "https://linkedin.com/company/techcorp",
-    twitter: "https://twitter.com/techcorp",
+    foundedYear: "",
+    linkedin: "",
+    twitter: "",
   });
 
   const [newBenefit, setNewBenefit] = useState("");
   const [newTech, setNewTech] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Load existing profile
+  useEffect(() => {
+    if (!user) return;
+    api.get<EmployerProfile>(`/api/companies/${user.id}`).then(({ data }) => {
+      if (data) {
+        setProfileId(data.id);
+        setFormData({
+          companyName: data.companyName,
+          industry: data.industry,
+          companySize: data.size,
+          location: data.location,
+          website: data.website ?? "",
+          description: data.description,
+          culture: data.culture ?? "",
+          benefits: data.benefits,
+          techStack: data.techStack,
+          remotePolicy: data.remotePolicy,
+          isHiring: data.isHiring,
+          foundedYear: data.foundedYear ?? "",
+          linkedin: data.linkedin ?? "",
+          twitter: data.twitter ?? "",
+        });
+      }
+      setIsFetching(false);
+    });
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
+    setSuccess("");
 
-    // Simulate profile update
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const payload = {
+      companyName: formData.companyName,
+      industry: formData.industry,
+      size: formData.companySize,
+      location: formData.location,
+      website: formData.website || undefined,
+      description: formData.description,
+      culture: formData.culture || undefined,
+      benefits: formData.benefits,
+      techStack: formData.techStack,
+      remotePolicy: formData.remotePolicy,
+      isHiring: formData.isHiring,
+      foundedYear: formData.foundedYear || undefined,
+      linkedin: formData.linkedin || undefined,
+      twitter: formData.twitter || undefined,
+    };
 
-    console.log("Company profile updated:", formData);
+    const { error: apiError } = profileId
+      ? await api.put(`/api/companies/${profileId}`, payload)
+      : await api.post("/api/companies", payload);
+
+    if (apiError) {
+      setError(apiError);
+    } else {
+      setSuccess("Company profile saved successfully!");
+    }
     setIsLoading(false);
   };
 
@@ -480,15 +536,27 @@ export default function CompanyProfilePage() {
             </CardContent>
           </Card>
 
+          {/* Error / Success */}
+          {error && (
+            <div className="rounded-md bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+              {success}
+            </div>
+          )}
+
           {/* Submit */}
           <div className="flex gap-4">
             <Button
               type="submit"
               size="lg"
-              disabled={isLoading}
+              disabled={isLoading || isFetching}
               className="flex-1"
             >
-              {isLoading ? "Updating Profile..." : "Update Profile"}
+              {isLoading ? "Saving..." : profileId ? "Update Profile" : "Create Profile"}
             </Button>
             <Button type="button" variant="outline" size="lg" asChild>
               <Link href="/employer/dashboard">Cancel</Link>

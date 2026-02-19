@@ -17,8 +17,12 @@ export async function GET(req: NextRequest) {
     const proposals = await prisma.proposal.findMany({
       where,
       include: {
-        employer: true,
-        talent: true,
+        employer: {
+          include: { employerProfile: true },
+        },
+        talent: {
+          include: { talentProfile: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

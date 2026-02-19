@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,46 +24,26 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// Mock data - in a real app, this would come from your database
-const mockProfile = {
-  id: "1",
-  name: "Sarah Chen",
-  title: "Senior Full-Stack Developer",
-  bio: "Passionate full-stack developer with 6+ years of experience building scalable web applications. I specialize in React, Node.js, and cloud architecture. I love solving complex problems and creating user-friendly solutions that make a real impact.",
-  location: "San Francisco, CA",
-  hourlyRate: 120,
-  availability: "Full-time",
-  experience: "6-8 years",
-  rating: 4.9,
-  reviewCount: 23,
-  skills: [
-    "React",
-    "Node.js",
-    "TypeScript",
-    "Python",
-    "AWS",
-    "PostgreSQL",
-    "GraphQL",
-    "Docker",
-    "Kubernetes",
-    "Next.js",
-    "Express.js",
-    "MongoDB",
-  ],
-  openToRemote: true,
-  openToContract: true,
-  portfolio: "https://sarahchen.dev",
-  linkedin: "https://linkedin.com/in/sarahchen",
-  github: "https://github.com/sarahchen",
-  website: "https://sarahchen.dev",
-  joinedDate: "March 2024",
-  responseTime: "Usually responds within 2 hours",
-  completedProjects: 15,
-  successRate: 98,
-};
+export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
 
-export default function ProfilePage({ params }: { params: { id: string } }) {
-  const profile = mockProfile; // In real app: fetch profile by params.id
+  const profile = await prisma.talentProfile.findFirst({
+    where: { OR: [{ id }, { userId: id }] },
+    include: { user: true },
+  });
+
+  if (!profile) notFound();
+
+  const similarTalent = await prisma.talentProfile.findMany({
+    where: {
+      id: { not: profile.id },
+      skills: { hasSome: profile.skills.slice(0, 2) },
+    },
+    take: 2,
+    select: { id: true, name: true, title: true, rate: true },
+  });
+
+  const joinedDate = new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   return (
     <div className="min-h-screen bg-background">
@@ -137,7 +119,7 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
 
                       <div className="text-right">
                         <div className="text-2xl font-bold text-primary">
-                          ${profile.hourlyRate}/hour
+                      ${profile.rate}/hour
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {profile.availability}
@@ -273,9 +255,11 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
                 <CardDescription>Send a proposal or message</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full" size="lg">
-                  <Mail className="mr-2 h-4 w-4" />
-                  Send Proposal
+                <Button className="w-full" size="lg" asChild>
+                  <Link href={`/send-proposal/${profile.userId}`}>
+                    <Mail className="mr-2 h-4 w-4" />
+                    Send Proposal
+                  </Link>
                 </Button>
                 <Button variant="outline" className="w-full bg-transparent">
                   <MessageSquare className="mr-2 h-4 w-4" />
@@ -292,29 +276,29 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
               <CardContent className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Member since</span>
-                  <span className="font-medium">{profile.joinedDate}</span>
+                  <span className="font-medium">{joinedDate}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Response time</span>
                   <span className="font-medium text-sm">
-                    {profile.responseTime}
+                    Usually within 24 hours
                   </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">
-                    Projects completed
+                    Reviews
                   </span>
                   <span className="font-medium">
-                    {profile.completedProjects}
+                    {profile.reviewCount}
                   </span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Success rate</span>
+                  <span className="text-muted-foreground">Rating</span>
                   <span className="font-medium text-primary">
-                    {profile.successRate}%
+                    {profile.rating ?? "N/A"}
                   </span>
                 </div>
               </CardContent>
@@ -329,21 +313,13 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {[
-                  {
-                    name: "Marcus Johnson",
-                    title: "Product Designer",
-                    rate: 95,
-                  },
-                  {
-                    name: "Elena Rodriguez",
-                    title: "Marketing Strategist",
-                    rate: 85,
-                  },
-                ].map((talent, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                {similarTalent.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">No similar talent found.</p>
+                ) : similarTalent.map((talent) => (
+                  <Link
+                    key={talent.id}
+                    href={`/profile/${talent.id}`}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer block"
                   >
                     <div>
                       <div className="font-medium text-sm">{talent.name}</div>
@@ -352,7 +328,7 @@ export default function ProfilePage({ params }: { params: { id: string } }) {
                       </div>
                     </div>
                     <div className="text-sm font-medium">${talent.rate}/hr</div>
-                  </div>
+                  </Link>
                 ))}
                 <Button
                   variant="outline"

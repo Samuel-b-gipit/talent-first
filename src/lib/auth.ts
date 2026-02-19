@@ -35,6 +35,21 @@ export async function setSessionCookie(token: string) {
   });
 }
 
+// Non-httpOnly role cookie — readable by middleware (Edge runtime)
+export async function setRoleCookie(role: string) {
+  const cookieStore = await cookies();
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + SESSION_EXPIRY_DAYS);
+
+  cookieStore.set("user_role", role, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    expires: expiresAt,
+    path: "/",
+  });
+}
+
 export async function getSessionToken() {
   const cookieStore = await cookies();
   return cookieStore.get(SESSION_COOKIE_NAME)?.value;
@@ -70,4 +85,5 @@ export async function deleteSession() {
 
   const cookieStore = await cookies();
   cookieStore.delete(SESSION_COOKIE_NAME);
+  cookieStore.delete("user_role");
 }

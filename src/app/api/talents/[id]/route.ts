@@ -9,8 +9,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ error: 'Missing id' }, { status: 400 });
   }
   try {
-    const profile = await prisma.talentProfile.findUnique({
-      where: { id },
+    const profile = await prisma.talentProfile.findFirst({
+      where: { OR: [{ id }, { userId: id }] },
       include: { user: true },
     });
     if (!profile) {

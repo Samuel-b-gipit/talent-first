@@ -2,7 +2,10 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/AuthContext"
+import { api } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,6 +19,8 @@ import { Plus, X, MapPin, DollarSign, Clock, User } from "lucide-react"
 import Link from "next/link"
 
 export default function CreateProfilePage() {
+  const router = useRouter()
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     title: "",
     bio: "",
@@ -33,16 +38,43 @@ export default function CreateProfilePage() {
   })
   const [newSkill, setNewSkill] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Simulate profile creation
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    if (formData.skills.length === 0) {
+      setError("Please add at least one skill.")
+      setIsLoading(false)
+      return
+    }
 
-    console.log("Profile created:", formData)
-    setIsLoading(false)
+    const { data, error: apiError } = await api.post("/api/talents", {
+      name: user?.name ?? "",
+      title: formData.title,
+      bio: formData.bio,
+      location: formData.location,
+      rate: parseFloat(formData.hourlyRate),
+      availability: formData.availability,
+      experience: formData.experience,
+      skills: formData.skills,
+      portfolio: formData.portfolio || null,
+      linkedin: formData.linkedin || null,
+      github: formData.github || null,
+      website: formData.website || null,
+      openToRemote: formData.openToRemote,
+      openToContract: formData.openToContract,
+    })
+
+    if (apiError) {
+      setError(apiError)
+      setIsLoading(false)
+      return
+    }
+
+    router.push("/proposals")
   }
 
   const addSkill = () => {
@@ -326,6 +358,13 @@ export default function CreateProfilePage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Error */}
+          {error && (
+            <div className="rounded-md bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
 
           {/* Submit */}
           <div className="flex gap-4">

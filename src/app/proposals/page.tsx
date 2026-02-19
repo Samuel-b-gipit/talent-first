@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { api, type Proposal } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,91 +33,48 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// Mock proposals data
-const mockProposals = [
-  {
-    id: "1",
-    company: {
-      name: "TechCorp Solutions",
-      logo: "/generic-company-logo.png",
-      industry: "Technology",
-    },
-    position: "Senior React Developer",
-    budget: "$120/hour",
-    budgetType: "hourly",
-    location: "San Francisco, CA",
-    remote: "Hybrid",
-    duration: "6+ months",
-    startDate: "2024-02-01",
-    status: "pending",
-    receivedDate: "2024-01-15",
-    message:
-      "Hi Sarah, we're impressed by your React expertise and would love to discuss a senior developer role with our growing team. We're building the next generation of fintech products...",
-    requirements:
-      "• 5+ years React experience\n• TypeScript proficiency\n• Experience with Node.js\n• Strong problem-solving skills",
-    benefits:
-      "• Competitive salary + equity\n• Health insurance\n• Flexible work arrangements\n• $2000 learning budget",
-    companyDescription:
-      "Leading fintech company focused on innovative payment solutions.",
-  },
-  {
-    id: "2",
-    company: {
-      name: "StartupXYZ",
-      logo: "/generic-company-logo.png",
-      industry: "E-commerce",
-    },
-    position: "Full-Stack Developer",
-    budget: "$110/hour",
-    budgetType: "hourly",
-    location: "Remote",
-    remote: "Fully Remote",
-    duration: "3-6 months",
-    startDate: "2024-01-25",
-    status: "pending",
-    receivedDate: "2024-01-12",
-    message:
-      "Hello Sarah! Your portfolio caught our attention. We're looking for a talented full-stack developer to help us scale our e-commerce platform...",
-    requirements:
-      "• Full-stack development experience\n• React and Node.js\n• Database design\n• API development",
-    benefits:
-      "• Remote-first culture\n• Flexible hours\n• Stock options\n• Top-tier equipment",
-    companyDescription:
-      "Fast-growing e-commerce startup disrupting the retail space.",
-  },
-  {
-    id: "3",
-    company: {
-      name: "Enterprise Corp",
-      logo: "/generic-company-logo.png",
-      industry: "Enterprise Software",
-    },
-    position: "Lead Frontend Developer",
-    budget: "$140/hour",
-    budgetType: "hourly",
-    location: "New York, NY",
-    remote: "On-site",
-    duration: "12+ months",
-    startDate: "2024-02-15",
-    status: "viewed",
-    receivedDate: "2024-01-08",
-    message:
-      "Dear Sarah, we have an exciting leadership opportunity for an experienced frontend developer. You would be leading a team of 5 developers...",
-    requirements:
-      "• 7+ years frontend experience\n• Leadership experience\n• React ecosystem expertise\n• Mentoring skills",
-    benefits:
-      "• Leadership role\n• Comprehensive benefits\n• 401k matching\n• Career advancement",
-    companyDescription:
-      "Established enterprise software company serving Fortune 500 clients.",
-  },
-];
+// Mock proposals data removed — fetched from API
+
+interface NormalizedProposal extends Omit<Proposal, "status" | "sentDate"> {
+  status: string;
+  receivedDate: string;
+  company: {
+    name: string;
+    logo: string | null;
+    industry: string;
+  };
+  companyDescription: string;
+}
 
 export default function ProposalsPage() {
+  const { user } = useAuth();
+  const [proposals, setProposals] = useState<NormalizedProposal[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("received");
-  const [selectedProposal, setSelectedProposal] = useState<
-    (typeof mockProposals)[0] | null
-  >(null);
+  const [selectedProposal, setSelectedProposal] = useState<NormalizedProposal | null>(null);
   const [responseMessage, setResponseMessage] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    api.get<any[]>(`/api/proposals?talentId=${user.id}`).then(({ data }) => {
+      if (data) {
+        setProposals(
+          data.map((p) => ({
+            ...p,
+            status: p.status.toLowerCase(),
+            receivedDate: p.createdAt,
+            company: {
+              name: p.employer?.employerProfile?.companyName ?? p.employer?.name ?? "Unknown",
+              logo: p.employer?.employerProfile?.logo ?? null,
+              industry: p.employer?.employerProfile?.industry ?? "Unknown",
+            },
+            companyDescription: p.employer?.employerProfile?.description ?? "",
+          }))
+        );
+      }
+      setIsLoading(false);
+    });
+  }, [user]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -147,19 +106,29 @@ export default function ProposalsPage() {
     }
   };
 
-  const handleResponse = (
+  const handleResponse = async (
     proposalId: string,
     response: "accept" | "decline"
   ) => {
-    console.log(`${response} proposal ${proposalId}:`, responseMessage);
-    // In real app: send response to backend
-    alert(`Proposal ${response}ed successfully!`);
+    const status = response === "accept" ? "accepted" : "declined";
+    const { error } = await api.put(`/api/proposals/${proposalId}`, {
+      status,
+      responseMessage: responseMessage || undefined,
+    });
+    if (!error) {
+      setProposals((prev) =>
+        prev.map((p) => (p.id === proposalId ? { ...p, status } : p))
+      );
+    }
     setSelectedProposal(null);
     setResponseMessage("");
   };
 
-  const pendingProposals = mockProposals.filter((p) => p.status === "pending");
-  const viewedProposals = mockProposals.filter((p) => p.status === "viewed");
+  const pendingProposals = proposals.filter((p) => p.status === "pending");
+  const viewedProposals = proposals.filter((p) => p.status === "viewed");
+  const acceptedProposals = proposals.filter((p) => p.status === "accepted");
+  const declinedProposals = proposals.filter((p) => p.status === "declined");
+  const respondedProposals = [...acceptedProposals, ...declinedProposals];
 
   return (
     <div className="min-h-screen bg-background">
@@ -209,7 +178,7 @@ export default function ProposalsPage() {
                   <p className="text-sm font-medium text-muted-foreground">
                     Total Received
                   </p>
-                  <p className="text-2xl font-bold">{mockProposals.length}</p>
+                  <p className="text-2xl font-bold">{proposals.length}</p>
                 </div>
                 <Mail className="h-8 w-8 text-primary" />
               </div>
@@ -268,16 +237,20 @@ export default function ProposalsPage() {
         >
           <TabsList>
             <TabsTrigger value="received">
-              All Proposals ({mockProposals.length})
+              All Proposals ({proposals.length})
             </TabsTrigger>
             <TabsTrigger value="pending">
               Pending ({pendingProposals.length})
             </TabsTrigger>
-            <TabsTrigger value="responded">Responded (0)</TabsTrigger>
+            <TabsTrigger value="responded">Responded ({respondedProposals.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="received" className="space-y-4">
-            {mockProposals.map((proposal) => (
+            {isLoading ? (
+              <p className="text-muted-foreground py-8 text-center">Loading proposals...</p>
+            ) : proposals.length === 0 ? (
+              <p className="text-muted-foreground py-8 text-center">No proposals yet.</p>
+            ) : proposals.map((proposal) => (
               <Card
                 key={proposal.id}
                 className="hover:shadow-md transition-shadow"
@@ -291,7 +264,7 @@ export default function ProposalsPage() {
                       <AvatarFallback>
                         {proposal.company.name
                           .split(" ")
-                          .map((n) => n[0])
+                          .map((n: string) => n[0])
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
@@ -351,7 +324,9 @@ export default function ProposalsPage() {
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">
                           Start:{" "}
-                          {new Date(proposal.startDate).toLocaleDateString()}
+                          {proposal.startDate
+                            ? new Date(proposal.startDate).toLocaleDateString()
+                            : "TBD"}
                         </p>
                         <div className="flex gap-2">
                           <Dialog>
@@ -394,7 +369,7 @@ export default function ProposalsPage() {
                                       <AvatarFallback className="text-xl">
                                         {selectedProposal.company.name
                                           .split(" ")
-                                          .map((n) => n[0])
+                                          .map((n: string) => n[0])
                                           .join("")}
                                       </AvatarFallback>
                                     </Avatar>
@@ -465,7 +440,7 @@ export default function ProposalsPage() {
                                         </span>
                                         <p className="text-muted-foreground">
                                           {new Date(
-                                            selectedProposal.startDate
+                                            selectedProposal.startDate ?? selectedProposal.receivedDate
                                           ).toLocaleDateString()}
                                         </p>
                                       </div>
@@ -594,7 +569,7 @@ export default function ProposalsPage() {
                       <AvatarFallback>
                         {proposal.company.name
                           .split(" ")
-                          .map((n) => n[0])
+                          .map((n: string) => n[0])
                           .join("")}
                       </AvatarFallback>
                     </Avatar>

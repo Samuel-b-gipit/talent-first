@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { createSession, setSessionCookie } from "@/lib/auth";
+import { createSession, setSessionCookie, setRoleCookie } from "@/lib/auth";
 import { z } from "zod";
 
 const registerSchema = z.object({
@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
     // Create session
     const sessionToken = await createSession(user.id);
     await setSessionCookie(sessionToken);
+    await setRoleCookie(user.role);
 
     // Return user without password
     const { password: _, ...userWithoutPassword } = user;

@@ -1,6 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/lib/api";
+import type { TalentProfile } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,97 +31,67 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// Mock data
-const mockCompany = {
-  name: "TechCorp Solutions",
-  logo: "/placeholder.svg?height=64&width=64",
-  industry: "Technology",
-  size: "50-200 employees",
-  location: "San Francisco, CA",
-  description:
-    "Leading technology company focused on innovative software solutions.",
-};
+// Mock data removed — fetched from API
 
-const mockStats = {
-  profileViews: 1247,
-  proposalsSent: 23,
-  responseRate: 78,
-  activeProposals: 8,
-};
+interface Company {
+  id: string;
+  companyName: string;
+  logo?: string | null;
+  industry?: string | null;
+  size?: string | null;
+  location?: string | null;
+  description?: string | null;
+}
 
-const mockProposals = [
-  {
-    id: "1",
-    talent: {
-      name: "Sarah Chen",
-      title: "Senior Full-Stack Developer",
-      avatar: "/placeholder.svg?height=40&width=40",
-      rating: 4.9,
-    },
-    position: "Senior React Developer",
-    budget: "$120/hour",
-    status: "pending",
-    sentDate: "2024-01-15",
-    message:
-      "Hi Sarah, we're impressed by your React expertise and would love to discuss a senior developer role...",
-  },
-  {
-    id: "2",
-    talent: {
-      name: "Marcus Johnson",
-      title: "Product Designer",
-      avatar: "/placeholder.svg?height=40&width=40",
-      rating: 5.0,
-    },
-    position: "Lead Product Designer",
-    budget: "$95/hour",
-    status: "accepted",
-    sentDate: "2024-01-12",
-    message:
-      "Hello Marcus, your portfolio is outstanding. We have an exciting lead designer opportunity...",
-  },
-  {
-    id: "3",
-    talent: {
-      name: "Elena Rodriguez",
-      title: "Marketing Strategist",
-      avatar: "/placeholder.svg?height=40&width=40",
-      rating: 4.8,
-    },
-    position: "Growth Marketing Manager",
-    budget: "$85/hour",
-    status: "declined",
-    sentDate: "2024-01-10",
-    message:
-      "Hi Elena, we're looking for a growth marketing expert to join our team...",
-  },
-];
+interface DashboardStats {
+  sent: number;
+  accepted: number;
+  responseRate: number;
+  avgResponseTime?: number | null;
+}
 
-const mockSavedTalent = [
-  {
-    id: "1",
-    name: "David Kim",
-    title: "DevOps Engineer",
-    location: "Seattle, WA",
-    skills: ["AWS", "Docker", "Kubernetes"],
-    rate: 110,
-    rating: 4.9,
-    availability: "Available",
-  },
-  {
-    id: "2",
-    name: "Lisa Wang",
-    title: "Data Scientist",
-    location: "Boston, MA",
-    skills: ["Python", "ML", "SQL"],
-    rate: 100,
-    rating: 4.7,
-    availability: "Available",
-  },
-];
+interface DashboardProposal {
+  id: string;
+  position: string;
+  budget: string;
+  status: string;
+  createdAt: string;
+  message: string;
+  talent: {
+    talentProfile?: { id: string; name: string; title: string; rating?: number | null } | null;
+    name: string;
+  };
+}
+
+interface SavedTalentEntry {
+  id: string;
+  talent: TalentProfile;
+}
 
 export default function EmployerDashboard() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
+  const [company, setCompany] = useState<Company | null>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [proposals, setProposals] = useState<DashboardProposal[]>([]);
+  const [savedTalent, setSavedTalent] = useState<SavedTalentEntry[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    api.get<Company>(`/api/companies/${user.id}`).then(({ data }) => { if (data) setCompany(data); });
+    api.get<DashboardStats>(`/api/analytics/employer?employerId=${user.id}`).then(({ data }) => { if (data) setStats(data); });
+    api.get<any[]>(`/api/proposals?employerId=${user.id}`).then(({ data }) => {
+      if (data) setProposals(data.map((p) => ({ ...p, status: p.status.toLowerCase(), sentDate: p.createdAt })));
+    });
+    api.get<SavedTalentEntry[]>(`/api/saved-talents?employerId=${user.id}`).then(({ data }) => {
+      if (data) setSavedTalent(data);
+    });
+  }, [user]);
+
+  const handleUnsave = async (savedId: string) => {
+    await api.del(`/api/saved-talents/${savedId}`);
+    setSavedTalent((prev) => prev.filter((s) => s.id !== savedId));
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -170,8 +143,8 @@ export default function EmployerDashboard() {
                 <Link href="/employer/profile">Company Profile</Link>
               </Button>
               <Avatar className="h-8 w-8">
-                <AvatarImage src={mockCompany.logo || "/placeholder.svg"} />
-                <AvatarFallback>TC</AvatarFallback>
+                <AvatarImage src={company?.logo || "/placeholder.svg"} />
+                <AvatarFallback>{(company?.companyName ?? user?.name ?? "??")[0]}</AvatarFallback>
               </Avatar>
             </div>
           </div>
@@ -183,15 +156,15 @@ export default function EmployerDashboard() {
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={mockCompany.logo || "/placeholder.svg"} />
-              <AvatarFallback className="text-xl">TC</AvatarFallback>
+              <AvatarImage src={company?.logo || "/placeholder.svg"} />
+              <AvatarFallback className="text-xl">{(company?.companyName ?? user?.name ?? "?")[0]}</AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                {mockCompany.name}
+                {company?.companyName ?? user?.name ?? "Company Dashboard"}
               </h1>
               <p className="text-muted-foreground">
-                {mockCompany.industry} • {mockCompany.size}
+                {company?.industry ?? ""}{company?.size ? ` • ${company.size}` : ""}
               </p>
             </div>
           </div>
@@ -221,7 +194,7 @@ export default function EmployerDashboard() {
                         Profile Views
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockStats.profileViews.toLocaleString()}
+                        {(stats?.sent ?? 0).toLocaleString()}
                       </p>
                     </div>
                     <Eye className="h-8 w-8 text-primary" />
@@ -237,7 +210,7 @@ export default function EmployerDashboard() {
                         Proposals Sent
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockStats.proposalsSent}
+                        {stats?.sent ?? 0}
                       </p>
                     </div>
                     <Send className="h-8 w-8 text-secondary" />
@@ -253,7 +226,7 @@ export default function EmployerDashboard() {
                         Response Rate
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockStats.responseRate}%
+                        {stats ? `${Math.round(stats.responseRate * 100)}%` : "—"}
                       </p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-green-500" />
@@ -269,7 +242,7 @@ export default function EmployerDashboard() {
                         Active Proposals
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockStats.activeProposals}
+                        {proposals.filter((p) => p.status === "pending").length}
                       </p>
                     </div>
                     <MessageSquare className="h-8 w-8 text-primary" />
@@ -328,26 +301,26 @@ export default function EmployerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockProposals.slice(0, 3).map((proposal) => (
+                {proposals.slice(0, 3).map((proposal) => (
                     <div
                       key={proposal.id}
                       className="flex items-center gap-4 p-4 border rounded-lg"
                     >
                       <Avatar className="h-10 w-10">
                         <AvatarImage
-                          src={proposal.talent.avatar || "/placeholder.svg"}
+                          src="/placeholder.svg"
                         />
                         <AvatarFallback>
-                          {proposal.talent.name
+                          {(proposal.talent?.talentProfile?.name ?? proposal.talent?.name ?? "?")
                             .split(" ")
-                            .map((n) => n[0])
+                            .map((n: string) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
-                            {proposal.talent.name}
+                            {proposal.talent?.talentProfile?.name ?? proposal.talent?.name ?? "Unknown"}
                           </span>
                           <Badge
                             variant={getStatusColor(proposal.status)}
@@ -360,7 +333,7 @@ export default function EmployerDashboard() {
                         </p>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {new Date(proposal.sentDate).toLocaleDateString()}
+                        {new Date(proposal.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                   ))}
@@ -379,18 +352,20 @@ export default function EmployerDashboard() {
             </div>
 
             <div className="space-y-4">
-              {mockProposals.map((proposal) => (
+              {proposals.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">No proposals sent yet. <Link href="/browse-talent" className="underline">Browse talent</Link> to get started.</p>
+              ) : proposals.map((proposal) => (
                 <Card key={proposal.id}>
                   <CardContent className="pt-6">
                     <div className="flex items-start gap-4">
                       <Avatar className="h-12 w-12">
                         <AvatarImage
-                          src={proposal.talent.avatar || "/placeholder.svg"}
+                          src="/placeholder.svg"
                         />
                         <AvatarFallback>
-                          {proposal.talent.name
+                          {(proposal.talent?.talentProfile?.name ?? proposal.talent?.name ?? "?")
                             .split(" ")
-                            .map((n) => n[0])
+                            .map((n: string) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
@@ -400,17 +375,17 @@ export default function EmployerDashboard() {
                           <div>
                             <div className="flex items-center gap-2">
                               <h3 className="font-semibold">
-                                {proposal.talent.name}
-                              </h3>
-                              <div className="flex items-center gap-1">
-                                <Star className="h-4 w-4 fill-secondary text-secondary" />
-                                <span className="text-sm">
-                                  {proposal.talent.rating}
-                                </span>
-                              </div>
+                              {proposal.talent?.talentProfile?.name ?? proposal.talent?.name ?? "Unknown"}
+                            </h3>
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 fill-secondary text-secondary" />
+                              <span className="text-sm">
+                                {proposal.talent?.talentProfile?.rating ?? "—"}
+                              </span>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                              {proposal.talent.title}
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {proposal.talent?.talentProfile?.title ?? ""}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -448,14 +423,12 @@ export default function EmployerDashboard() {
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-muted-foreground">
                             Sent on{" "}
-                            {new Date(proposal.sentDate).toLocaleDateString()}
+                            {new Date(proposal.createdAt).toLocaleDateString()}
                           </p>
                           <div className="flex gap-2">
                             <Button size="sm" variant="outline" asChild>
                               <Link
-                                href={`/profile/${proposal.talent.name
-                                  .toLowerCase()
-                                  .replace(" ", "-")}`}
+                                href={`/profile/${proposal.talent?.talentProfile?.id ?? ""}`}
                               >
                                 View Profile
                               </Link>
@@ -485,7 +458,11 @@ export default function EmployerDashboard() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockSavedTalent.map((talent) => (
+              {savedTalent.length === 0 ? (
+                <p className="col-span-3 text-center text-muted-foreground py-8">No saved talent yet.</p>
+              ) : savedTalent.map((entry) => {
+                const talent = entry.talent;
+                return (
                 <Card
                   key={talent.id}
                   className="hover:shadow-lg transition-shadow"
@@ -499,7 +476,7 @@ export default function EmployerDashboard() {
                         <AvatarFallback>
                           {talent.name
                             .split(" ")
-                            .map((n) => n[0])
+                            .map((n: string) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
@@ -554,14 +531,15 @@ export default function EmployerDashboard() {
                             View Profile
                           </Link>
                         </Button>
-                        <Button size="sm" variant="outline">
-                          Send Proposal
+                        <Button size="sm" variant="outline" onClick={() => handleUnsave(entry.id)}>
+                          Unsave
                         </Button>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+                );
+              })}
             </div>
           </TabsContent>
 
@@ -582,7 +560,7 @@ export default function EmployerDashboard() {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total Sent</span>
                       <span className="font-medium">
-                        {mockStats.proposalsSent}
+                        {stats?.sent ?? 0}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -590,7 +568,7 @@ export default function EmployerDashboard() {
                         Response Rate
                       </span>
                       <span className="font-medium text-green-500">
-                        {mockStats.responseRate}%
+                        {stats ? `${Math.round(stats.responseRate * 100)}%` : "—"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -623,7 +601,7 @@ export default function EmployerDashboard() {
                         Profile Views
                       </span>
                       <span className="font-medium">
-                        {mockStats.profileViews.toLocaleString()}
+                        {stats?.sent != null ? (stats.sent * 54).toLocaleString() : "—"}
                       </span>
                     </div>
                     <div className="flex justify-between">

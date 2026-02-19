@@ -2,7 +2,10 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { api, type TalentProfile, type EmployerProfile } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,56 +30,79 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Send, DollarSign, MapPin, Star } from "lucide-react";
 import Link from "next/link";
 
-// Mock talent data - in real app, this would be fetched based on talentId
-const mockTalent = {
-  id: "1",
-  name: "Sarah Chen",
-  title: "Senior Full-Stack Developer",
-  location: "San Francisco, CA",
-  skills: ["React", "Node.js", "TypeScript", "AWS"],
-  experience: "6-8 years",
-  rate: 120,
-  rating: 4.9,
-  reviewCount: 23,
-  bio: "Passionate full-stack developer with 6+ years of experience building scalable web applications.",
-  avatar: "/professional-headshot.png",
-};
+// Mock talent data removed — fetched from API
 
 export default function SendProposalPage({
   params,
 }: {
   readonly params: { readonly talentId: string };
 }) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [talent, setTalent] = useState<TalentProfile | null>(null);
+  const [employerProfile, setEmployerProfile] = useState<EmployerProfile | null>(null);
   const [formData, setFormData] = useState({
     position: "",
-    company: "TechCorp Solutions",
+    company: "",
     projectType: "full-time",
     budget: "",
     budgetType: "hourly",
     startDate: "",
     duration: "",
-    location: "San Francisco, CA",
+    location: "",
     remote: "hybrid",
     message: "",
     requirements: "",
     benefits: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const talent = mockTalent; // In real app: fetch talent by params.talentId
+  useEffect(() => {
+    if (!user) return;
+    // Fetch talent profile
+    api.get<TalentProfile>(`/api/talents/${params.talentId}`).then(({ data }) => {
+      if (data) setTalent(data);
+    });
+    // Fetch employer profile to pre-fill company name
+    api.get<EmployerProfile>(`/api/companies/${user.id}`).then(({ data }) => {
+      if (data) {
+        setEmployerProfile(data);
+        setFormData((prev) => ({
+          ...prev,
+          company: data.companyName,
+          location: data.location,
+        }));
+      }
+    });
+  }, [user, params.talentId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
 
-    // Simulate proposal sending
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const { error: apiError } = await api.post("/api/proposals", {
+      talentId: talent?.userId ?? params.talentId,
+      position: formData.position,
+      budget: formData.budget,
+      budgetType: formData.budgetType,
+      message: formData.message,
+      remote: formData.remote,
+      requirements: formData.requirements || null,
+      benefits: formData.benefits || null,
+      duration: formData.duration || null,
+      startDate: formData.startDate || null,
+      location: formData.location,
+    });
 
-    console.log("Proposal sent:", { talentId: params.talentId, ...formData });
-    setIsLoading(false);
+    if (apiError) {
+      setError(apiError);
+      setIsLoading(false);
+      return;
+    }
 
-    // In real app: redirect to success page or dashboard
-    alert("Proposal sent successfully!");
+    router.push("/proposal-success");
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -114,15 +140,18 @@ export default function SendProposalPage({
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         {/* Back Button */}
         <Button variant="ghost" className="mb-6" asChild>
-          <Link href={`/profile/${talent.id}`}>
+          <Link href={talent ? `/profile/${talent.userId}` : "/browse-talent"}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Profile
           </Link>
         </Button>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Talent Summary */}
-          <div className="lg:col-span-1">
+        {!talent ? (
+          <div className="text-center py-20 text-muted-foreground">Loading talent profile...</div>
+        ) : (
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Talent Summary */}
+            <div className="lg:col-span-1">
             <Card className="sticky top-8">
               <CardHeader>
                 <CardTitle>Sending Proposal To</CardTitle>
@@ -130,21 +159,21 @@ export default function SendProposalPage({
               <CardContent>
                 <div className="flex items-center gap-4 mb-4">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={talent.avatar || "/placeholder.svg"} />
+                  <AvatarImage src={"/placeholder.svg"} />
                     <AvatarFallback className="text-xl">
-                      {talent.name
-                        .split(" ")
+                      {talent?.name
+                        ?.split(" ")
                         .map((n) => n[0])
-                        .join("")}
+                        .join("") ?? "?"}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-semibold text-lg">{talent.name}</h3>
-                    <p className="text-muted-foreground">{talent.title}</p>
+                    <h3 className="font-semibold text-lg">{talent?.name}</h3>
+                    <p className="text-muted-foreground">{talent?.title}</p>
                     <div className="flex items-center gap-1 mt-1">
                       <Star className="h-4 w-4 fill-secondary text-secondary" />
                       <span className="text-sm">
-                        {talent.rating} ({talent.reviewCount})
+                        {talent?.rating} ({talent?.reviewCount})
                       </span>
                     </div>
                   </div>
@@ -153,10 +182,10 @@ export default function SendProposalPage({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4" />
-                    {talent.location}
+                    {talent?.location}
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <DollarSign className="h-4 w-4" />${talent.rate}/hour
+                    <DollarSign className="h-4 w-4" />${talent?.rate}/hour
                   </div>
                 </div>
 
@@ -165,7 +194,7 @@ export default function SendProposalPage({
                 <div>
                   <p className="text-sm font-medium mb-2">Skills</p>
                   <div className="flex flex-wrap gap-1">
-                    {talent.skills.map((skill, index) => (
+                    {talent?.skills?.map((skill, index) => (
                       <Badge
                         key={index}
                         variant="secondary"
@@ -179,7 +208,7 @@ export default function SendProposalPage({
 
                 <Separator className="my-4" />
 
-                <p className="text-sm text-muted-foreground">{talent.bio}</p>
+                <p className="text-sm text-muted-foreground">{talent?.bio}</p>
               </CardContent>
             </Card>
           </div>
@@ -194,7 +223,7 @@ export default function SendProposalPage({
                 </CardTitle>
                 <CardDescription>
                   Create a compelling proposal to attract{" "}
-                  {talent.name.split(" ")[0]} to your opportunity
+                  {talent?.name?.split(" ")[0] ?? "this talent"} to your opportunity
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -386,13 +415,7 @@ export default function SendProposalPage({
                       <Label htmlFor="message">Personal Message</Label>
                       <Textarea
                         id="message"
-                        placeholder={`Hi ${
-                          talent.name.split(" ")[0]
-                        },\n\nI came across your profile and was impressed by your experience with ${talent.skills
-                          .slice(0, 2)
-                          .join(
-                            " and "
-                          )}. We have an exciting opportunity that I think would be a great fit for your skills...\n\nLooking forward to hearing from you!`}
+                        placeholder={`Hi ${talent?.name?.split(" ")[0] ?? ""},\n\nI came across your profile and was impressed by your experience with ${(talent?.skills ?? []).slice(0, 2).join(" and ")}. We have an exciting opportunity that I think would be a great fit for your skills...\n\nLooking forward to hearing from you!`}
                         value={formData.message}
                         onChange={(e) =>
                           handleInputChange("message", e.target.value)
@@ -402,7 +425,7 @@ export default function SendProposalPage({
                       />
                       <p className="text-sm text-muted-foreground">
                         Write a personalized message explaining why you're
-                        interested in working with {talent.name.split(" ")[0]}
+                        interested in working with {talent?.name?.split(" ")[0] ?? "them"}
                       </p>
                     </div>
 
@@ -433,25 +456,33 @@ export default function SendProposalPage({
                     </div>
                   </div>
 
+                  {/* Error */}
+                  {error && (
+                    <div className="rounded-md bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
+                      {error}
+                    </div>
+                  )}
+
                   {/* Submit */}
                   <div className="flex gap-4 pt-4">
                     <Button
                       type="submit"
                       size="lg"
-                      disabled={isLoading}
+                      disabled={isLoading || !talent}
                       className="flex-1"
                     >
                       {isLoading ? "Sending Proposal..." : "Send Proposal"}
                     </Button>
                     <Button type="button" variant="outline" size="lg" asChild>
-                      <Link href={`/profile/${talent.id}`}>Cancel</Link>
+                      <Link href={talent ? `/profile/${talent.userId}` : "/browse-talent"}>Cancel</Link>
                     </Button>
                   </div>
                 </form>
               </CardContent>
             </Card>
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
  "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { api, type TalentProfile } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,95 +11,24 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search, Filter, MapPin, Clock, Star, DollarSign } from "lucide-react"
 import Link from "next/link"
 
-// Mock data
-const mockTalent = [
-  {
-    id: "1",
-    name: "Sarah Chen",
-    title: "Senior Full-Stack Developer",
-    location: "San Francisco, CA",
-    skills: ["React", "Node.js", "TypeScript", "AWS"],
-    experience: "6-8 years",
-    rate: 120,
-    rating: 4.9,
-    reviewCount: 23,
-    availability: "Available",
-    bio: "Passionate full-stack developer with 6+ years of experience building scalable web applications.",
-  },
-  {
-    id: "2",
-    name: "Marcus Johnson",
-    title: "Product Designer",
-    location: "New York, NY",
-    skills: ["Figma", "User Research", "Prototyping", "Design Systems"],
-    experience: "7+ years",
-    rate: 95,
-    rating: 5.0,
-    reviewCount: 18,
-    availability: "Available",
-    bio: "Creative product designer focused on user-centered design and innovative solutions.",
-  },
-  {
-    id: "3",
-    name: "Elena Rodriguez",
-    title: "Marketing Strategist",
-    location: "Austin, TX",
-    skills: ["Growth Marketing", "Analytics", "Content Strategy", "SEO"],
-    experience: "4+ years",
-    rate: 85,
-    rating: 4.8,
-    reviewCount: 31,
-    availability: "Available",
-    bio: "Data-driven marketing strategist with expertise in growth and digital marketing.",
-  },
-  {
-    id: "4",
-    name: "David Kim",
-    title: "DevOps Engineer",
-    location: "Seattle, WA",
-    skills: ["AWS", "Docker", "Kubernetes", "Terraform"],
-    experience: "5+ years",
-    rate: 110,
-    rating: 4.9,
-    reviewCount: 15,
-    availability: "Available",
-    bio: "DevOps engineer specializing in cloud infrastructure and automation.",
-  },
-  {
-    id: "5",
-    name: "Lisa Wang",
-    title: "Data Scientist",
-    location: "Boston, MA",
-    skills: ["Python", "Machine Learning", "SQL", "TensorFlow"],
-    experience: "4+ years",
-    rate: 100,
-    rating: 4.7,
-    reviewCount: 22,
-    availability: "Available",
-    bio: "Data scientist with expertise in machine learning and predictive analytics.",
-  },
-  {
-    id: "6",
-    name: "Alex Thompson",
-    title: "Mobile Developer",
-    location: "Los Angeles, CA",
-    skills: ["React Native", "Swift", "Kotlin", "Flutter"],
-    experience: "5+ years",
-    rate: 105,
-    rating: 4.8,
-    reviewCount: 19,
-    availability: "Available",
-    bio: "Mobile developer creating beautiful and performant iOS and Android applications.",
-  },
-]
+// Mock data removed — fetched from API
 
 export default function BrowseTalentPage() {
+  const [talents, setTalents] = useState<TalentProfile[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedSkill, setSelectedSkill] = useState("allSkills")
   const [selectedLocation, setSelectedLocation] = useState("allLocations")
   const [selectedExperience, setSelectedExperience] = useState("allExperience")
 
-  const filteredTalent = mockTalent.filter((talent) => {
+  useEffect(() => {
+    api.get<TalentProfile[]>("/api/talents").then(({ data }) => {
+      if (data) setTalents(data)
+      setIsLoading(false)
+    })
+  }, [])
+
+  const filteredTalent = talents.filter((talent) => {
     const matchesSearch =
       talent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       talent.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -218,13 +148,17 @@ export default function BrowseTalentPage() {
         {/* Results */}
         <div className="mb-4">
           <p className="text-muted-foreground">
-            Showing {filteredTalent.length} of {mockTalent.length} professionals
+          Showing {filteredTalent.length} of {isLoading ? "..." : talents.length} professionals
           </p>
         </div>
 
         {/* Talent Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredTalent.map((talent) => (
+        {isLoading ? (
+          <div className="col-span-3 text-center py-20 text-muted-foreground">Loading talent...</div>
+        ) : filteredTalent.length === 0 ? (
+          <div className="col-span-3 text-center py-20 text-muted-foreground">No talent found matching your filters.</div>
+        ) : filteredTalent.map((talent) => (
             <Card key={talent.id} className="hover:shadow-lg transition-shadow">
               <CardHeader>
                 <div className="flex items-start gap-4">
