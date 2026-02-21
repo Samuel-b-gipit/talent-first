@@ -5,7 +5,7 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { api, type TalentProfile, type EmployerProfile } from "@/lib/api";
+import { talentsApi, companiesApi, proposalsApi, type TalentProfile, type EmployerProfile } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -61,11 +61,11 @@ export default function SendProposalPage({
   useEffect(() => {
     if (!user) return;
     // Fetch talent profile
-    api.get<TalentProfile>(`/api/talents/${params.talentId}`).then(({ data }) => {
+    talentsApi.getById(params.talentId).then(({ data }) => {
       if (data) setTalent(data);
     });
     // Fetch employer profile to pre-fill company name
-    api.get<EmployerProfile>(`/api/companies/${user.id}`).then(({ data }) => {
+    companiesApi.getById(user.id).then(({ data }) => {
       if (data) {
         setEmployerProfile(data);
         setFormData((prev) => ({
@@ -82,7 +82,7 @@ export default function SendProposalPage({
     setIsLoading(true);
     setError("");
 
-    const { error: apiError } = await api.post("/api/proposals", {
+    const { error: apiError } = await proposalsApi.create({
       talentId: talent?.userId ?? params.talentId,
       position: formData.position,
       budget: formData.budget,

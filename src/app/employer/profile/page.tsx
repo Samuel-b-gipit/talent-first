@@ -4,7 +4,7 @@ import type React from "react";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { api, type EmployerProfile } from "@/lib/api";
+import { companiesApi, type EmployerProfile } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -59,7 +59,7 @@ export default function CompanyProfilePage() {
   // Load existing profile
   useEffect(() => {
     if (!user) return;
-    api.get<EmployerProfile>(`/api/companies/${user.id}`).then(({ data }) => {
+    companiesApi.getById(user.id).then(({ data }) => {
       if (data) {
         setProfileId(data.id);
         setFormData({
@@ -107,8 +107,8 @@ export default function CompanyProfilePage() {
     };
 
     const { error: apiError } = profileId
-      ? await api.put(`/api/companies/${profileId}`, payload)
-      : await api.post("/api/companies", payload);
+      ? await companiesApi.update(profileId, payload)
+      : await companiesApi.create(payload);
 
     if (apiError) {
       setError(apiError);

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { api } from "@/lib/api";
-import type { TalentProfile } from "@/lib/api";
+import { companiesApi, analyticsApi, proposalsApi, savedTalentsApi } from "@/lib/api";
+import type { TalentProfile, Proposal } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -50,18 +50,6 @@ interface DashboardStats {
   avgResponseTime?: number | null;
 }
 
-interface DashboardProposal {
-  id: string;
-  position: string;
-  budget: string;
-  status: string;
-  createdAt: string;
-  message: string;
-  talent: {
-    talentProfile?: { id: string; name: string; title: string; rating?: number | null } | null;
-    name: string;
-  };
-}
 
 interface SavedTalentEntry {
   id: string;
@@ -73,23 +61,23 @@ export default function EmployerDashboard() {
   const [activeTab, setActiveTab] = useState("overview");
   const [company, setCompany] = useState<Company | null>(null);
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [proposals, setProposals] = useState<DashboardProposal[]>([]);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
   const [savedTalent, setSavedTalent] = useState<SavedTalentEntry[]>([]);
 
   useEffect(() => {
     if (!user) return;
-    api.get<Company>(`/api/companies/${user.id}`).then(({ data }) => { if (data) setCompany(data); });
-    api.get<DashboardStats>(`/api/analytics/employer?employerId=${user.id}`).then(({ data }) => { if (data) setStats(data); });
-    api.get<any[]>(`/api/proposals?employerId=${user.id}`).then(({ data }) => {
-      if (data) setProposals(data.map((p) => ({ ...p, status: p.status.toLowerCase(), sentDate: p.createdAt })));
+    companiesApi.getById(user.id).then(({ data }) => { if (data) setCompany(data); });
+    analyticsApi.getEmployerStats<DashboardStats>(user.id).then(({ data }) => { if (data) setStats(data); });
+    proposalsApi.getByEmployer(user.id).then(({ data }) => {
+      if (data) setProposals(data.map((p) => ({ ...p, status: p.status.toLowerCase() })));
     });
-    api.get<SavedTalentEntry[]>(`/api/saved-talents?employerId=${user.id}`).then(({ data }) => {
+    savedTalentsApi.getByEmployer(user.id).then(({ data }) => {
       if (data) setSavedTalent(data);
     });
   }, [user]);
 
   const handleUnsave = async (savedId: string) => {
-    await api.del(`/api/saved-talents/${savedId}`);
+    await savedTalentsApi.remove(savedId);
     setSavedTalent((prev) => prev.filter((s) => s.id !== savedId));
   };
 
@@ -311,7 +299,7 @@ export default function EmployerDashboard() {
                           src="/placeholder.svg"
                         />
                         <AvatarFallback>
-                          {(proposal.talent?.talentProfile?.name ?? proposal.talent?.name ?? "?")
+                          {(proposal.talent?.name ?? "?")
                             .split(" ")
                             .map((n: string) => n[0])
                             .join("")}
@@ -320,7 +308,7 @@ export default function EmployerDashboard() {
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
-                            {proposal.talent?.talentProfile?.name ?? proposal.talent?.name ?? "Unknown"}
+                            {proposal.talent?.name ?? "Unknown"}
                           </span>
                           <Badge
                             variant={getStatusColor(proposal.status)}
@@ -363,29 +351,28 @@ export default function EmployerDashboard() {
                           src="/placeholder.svg"
                         />
                         <AvatarFallback>
-                          {(proposal.talent?.talentProfile?.name ?? proposal.talent?.name ?? "?")
+                          {(proposal.talent?.name ?? "?")
                             .split(" ")
                             .map((n: string) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
-
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
                           <div>
                             <div className="flex items-center gap-2">
                               <h3 className="font-semibold">
-                              {proposal.talent?.talentProfile?.name ?? proposal.talent?.name ?? "Unknown"}
+                              {proposal.talent?.name ?? "Unknown"}
                             </h3>
                             <div className="flex items-center gap-1">
                               <Star className="h-4 w-4 fill-secondary text-secondary" />
                               <span className="text-sm">
-                                {proposal.talent?.talentProfile?.rating ?? "—"}
+                                {proposal.talent?.rating ?? "—"}
                               </span>
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {proposal.talent?.talentProfile?.title ?? ""}
+                            {proposal.talent?.title ?? ""}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -428,7 +415,7 @@ export default function EmployerDashboard() {
                           <div className="flex gap-2">
                             <Button size="sm" variant="outline" asChild>
                               <Link
-                                href={`/profile/${proposal.talent?.talentProfile?.id ?? ""}`}
+                                href={`/profile/${proposal.talent?.id ?? ""}`}
                               >
                                 View Profile
                               </Link>

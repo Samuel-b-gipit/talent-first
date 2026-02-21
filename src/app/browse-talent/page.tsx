@@ -1,7 +1,7 @@
  "use client"
 
 import { useState, useEffect } from "react"
-import { api, type TalentProfile } from "@/lib/api"
+import { talentsApi, type TalentProfile } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -22,7 +22,7 @@ export default function BrowseTalentPage() {
   const [selectedExperience, setSelectedExperience] = useState("allExperience")
 
   useEffect(() => {
-    api.get<TalentProfile[]>("/api/talents").then(({ data }) => {
+    talentsApi.getAll().then(({ data }) => {
       if (data) setTalents(data)
       setIsLoading(false)
     })

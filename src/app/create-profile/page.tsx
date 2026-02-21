@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
-import { api } from "@/lib/api"
+import { talentsApi } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -51,7 +51,7 @@ export default function CreateProfilePage() {
       return
     }
 
-    const { data, error: apiError } = await api.post("/api/talents", {
+    const { data, error: apiError } = await talentsApi.create({
       name: user?.name ?? "",
       title: formData.title,
       bio: formData.bio,

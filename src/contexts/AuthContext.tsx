@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { authApi } from "@/lib/api";
 
 export type UserRole = "TALENT" | "EMPLOYER";
 
@@ -38,13 +39,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/me", { credentials: "include" });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-      } else {
-        setUser(null);
-      }
+      const { data } = await authApi.me();
+      setUser(data?.user ?? null);
     } catch {
       setUser(null);
     }
@@ -57,25 +53,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = useCallback(
     async (email: string, password: string): Promise<{ error?: string }> => {
-      try {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email, password }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          return { error: data.error || "Login failed" };
-        }
-
-        setUser(data.user);
-        return {};
-      } catch {
-        return { error: "An error occurred. Please try again." };
-      }
+      const { data, error } = await authApi.login(email, password);
+      if (error || !data) return { error: error ?? "Login failed" };
+      setUser(data.user);
+      return {};
     },
     []
   );
@@ -87,39 +68,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password: string,
       role: UserRole
     ): Promise<{ error?: string }> => {
-      try {
-        const res = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ name, email, password, role }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          return { error: data.error || "Registration failed" };
-        }
-
-        setUser(data.user);
-        return {};
-      } catch {
-        return { error: "An error occurred. Please try again." };
-      }
+      const { data, error } = await authApi.register(name, email, password, role);
+      if (error || !data) return { error: error ?? "Registration failed" };
+      setUser(data.user);
+      return {};
     },
     []
   );
 
   const logout = useCallback(async () => {
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } finally {
-      setUser(null);
-      router.push("/login");
-    }
+    await authApi.logout();
+    setUser(null);
+    router.push("/login");
   }, [router]);
 
   return (

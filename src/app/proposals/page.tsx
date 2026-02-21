@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { api, type Proposal } from "@/lib/api";
+import { proposalsApi, type Proposal } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +56,7 @@ export default function ProposalsPage() {
 
   useEffect(() => {
     if (!user) return;
-    api.get<any[]>(`/api/proposals?talentId=${user.id}`).then(({ data }) => {
+    proposalsApi.getByTalent(user.id).then(({ data }) => {
       if (data) {
         setProposals(
           data.map((p) => ({
@@ -64,11 +64,11 @@ export default function ProposalsPage() {
             status: p.status.toLowerCase(),
             receivedDate: p.createdAt,
             company: {
-              name: p.employer?.employerProfile?.companyName ?? p.employer?.name ?? "Unknown",
-              logo: p.employer?.employerProfile?.logo ?? null,
-              industry: p.employer?.employerProfile?.industry ?? "Unknown",
+              name: p.employer?.companyName ?? p.employer?.user.name ?? "Unknown",
+              logo: p.employer?.logo ?? null,
+              industry: p.employer?.industry ?? "Unknown",
             },
-            companyDescription: p.employer?.employerProfile?.description ?? "",
+            companyDescription: p.employer?.description ?? "",
           }))
         );
       }
@@ -111,7 +111,7 @@ export default function ProposalsPage() {
     response: "accept" | "decline"
   ) => {
     const status = response === "accept" ? "accepted" : "declined";
-    const { error } = await api.put(`/api/proposals/${proposalId}`, {
+    const { error } = await proposalsApi.update(proposalId, {
       status,
       responseMessage: responseMessage || undefined,
     });

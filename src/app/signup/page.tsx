@@ -24,6 +24,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, AlertCircle, UserCircle, Building2 } from "lucide-react";
 import Link from "next/link";
+import { authApi } from "@/lib/api";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -42,30 +43,21 @@ export default function SignupPage() {
     setIsLoading(true);
     setError("");
 
-    try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Registration failed");
-        setIsLoading(false);
-        return;
-      }
-
-      // Redirect based on user role
-      if (data.user.role === "EMPLOYER") {
-        router.push("/employer/profile");
-      } else {
-        router.push("/create-profile");
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+    const { data, error: apiError } = await authApi.register(
+      formData.name,
+      formData.email,
+      formData.password,
+      formData.role
+    );
+    if (apiError || !data) {
+      setError(apiError ?? "Registration failed");
       setIsLoading(false);
+      return;
+    }
+    if (data.user.role === "EMPLOYER") {
+      router.push("/employer/profile");
+    } else {
+      router.push("/create-profile");
     }
   };
 

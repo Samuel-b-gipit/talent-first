@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { authApi } from "@/lib/api";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -31,30 +32,16 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || "Login failed");
-        setIsLoading(false);
-        return;
-      }
-
-      // Redirect based on user role
-      if (data.user.role === "EMPLOYER") {
-        router.push("/employer/dashboard");
-      } else {
-        router.push("/recommendations");
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
+    const { data, error: apiError } = await authApi.login(email, password);
+    if (apiError || !data) {
+      setError(apiError ?? "Login failed");
       setIsLoading(false);
+      return;
+    }
+    if (data.user.role === "EMPLOYER") {
+      router.push("/employer/dashboard");
+    } else {
+      router.push("/recommendations");
     }
   };
 
