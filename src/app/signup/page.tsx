@@ -62,20 +62,39 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background">
+      {/* Nav Header */}
+      <header className="border-b border-border bg-card">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-sm">TF</span>
+              </div>
+              <span className="text-xl font-bold text-foreground">TalentFirst</span>
+            </Link>
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/browse-talent" className="text-muted-foreground hover:text-foreground transition-colors">
+                Browse Talent
+              </Link>
+              <Link href="/for-employers" className="text-muted-foreground hover:text-foreground transition-colors">
+                For Employers
+              </Link>
+              <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
+                How It Works
+              </Link>
+            </nav>
+            <Button variant="outline" asChild>
+              <Link href="/login">Sign In</Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <div className="flex items-center justify-center p-4 py-16">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">
-                TF
-              </span>
-            </div>
-            <span className="text-xl font-bold text-foreground">
-              TalentFirst
-            </span>
-          </Link>
           <h1 className="text-2xl font-bold text-foreground mb-2">
             Create your account
           </h1>
@@ -215,6 +234,7 @@ export default function SignupPage() {
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );

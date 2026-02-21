@@ -136,6 +136,7 @@ export const authApi = {
 
 export const talentsApi = {
   getAll: () => api.get<TalentProfile[]>("/api/talents"),
+  getFeatured: () => api.get<TalentProfile[]>("/api/talents?limit=3"),
   getById: (id: string) => api.get<TalentProfile>(`/api/talents/${id}`),
   create: (payload: unknown) => api.post<TalentProfile>("/api/talents", payload),
 };

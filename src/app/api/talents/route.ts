@@ -10,6 +10,8 @@ export async function GET(req: NextRequest) {
   const minRate = searchParams.get('minRate') ? Number(searchParams.get('minRate')) : undefined;
   const maxRate = searchParams.get('maxRate') ? Number(searchParams.get('maxRate')) : undefined;
 
+  const limit = searchParams.get('limit') ? Number(searchParams.get('limit')) : undefined;
+
   const where: any = {};
   if (skills && skills.length > 0) {
     where.skills = { hasSome: skills };
@@ -27,6 +29,7 @@ export async function GET(req: NextRequest) {
     const profiles = await prisma.talentProfile.findMany({
       where,
       include: { user: true },
+      ...(limit ? { take: limit } : {}),
     });
     return NextResponse.json(profiles);
   } catch (error) {

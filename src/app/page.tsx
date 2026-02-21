@@ -10,8 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Users, Building2, Star, MapPin, Clock } from "lucide-react";
 import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const featuredTalent = await prisma.talentProfile.findMany({
+    take: 3,
+    orderBy: { rating: "desc" },
+  });
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -124,48 +130,9 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {/* Sample Talent Cards */}
-            {[
-              {
-                name: "Sarah Chen",
-                title: "Senior Full-Stack Developer",
-                location: "San Francisco, CA",
-                skills: ["React", "Node.js", "TypeScript", "AWS"],
-                experience: "5+ years",
-                rate: "$120/hour",
-                rating: 4.9,
-              },
-              {
-                name: "Marcus Johnson",
-                title: "Product Designer",
-                location: "New York, NY",
-                skills: [
-                  "Figma",
-                  "User Research",
-                  "Prototyping",
-                  "Design Systems",
-                ],
-                experience: "7+ years",
-                rate: "$95/hour",
-                rating: 5.0,
-              },
-              {
-                name: "Elena Rodriguez",
-                title: "Marketing Strategist",
-                location: "Austin, TX",
-                skills: [
-                  "Growth Marketing",
-                  "Analytics",
-                  "Content Strategy",
-                  "SEO",
-                ],
-                experience: "4+ years",
-                rate: "$85/hour",
-                rating: 4.8,
-              },
-            ].map((talent, index) => (
+            {featuredTalent.map((talent) => (
               <Card
-                key={index}
+                key={talent.id}
                 className="hover:shadow-lg transition-shadow cursor-pointer"
               >
                 <CardHeader>
@@ -179,7 +146,7 @@ export default function HomePage() {
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 fill-secondary text-secondary" />
                       <span className="text-sm font-medium">
-                        {talent.rating}
+                        {talent.rating ?? "—"}
                       </span>
                     </div>
                   </div>
@@ -212,9 +179,11 @@ export default function HomePage() {
                     </div>
                     <div className="flex items-center justify-between pt-2">
                       <span className="font-semibold text-primary">
-                        {talent.rate}
+                        ${talent.rate}/hr
                       </span>
-                      <Button size="sm">Send Proposal</Button>
+                      <Button size="sm" asChild>
+                        <Link href="/login">Send Proposal</Link>
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
