@@ -42,8 +42,8 @@ export function middleware(request: NextRequest) {
   const userRole = request.cookies.get(ROLE_COOKIE)?.value;
   const isAuthenticated = !!sessionToken;
 
-  // Redirect authenticated users away from login/signup
-  if (isAuthenticated && matchesRoute(pathname, AUTH_ROUTES)) {
+  // Redirect authenticated users away from login/signup and the public home page
+  if (isAuthenticated && (matchesRoute(pathname, AUTH_ROUTES) || pathname === "/")) {
     const destination =
       userRole === "EMPLOYER" ? "/employer/dashboard" : "/recommendations";
     return NextResponse.redirect(new URL(destination, request.url));

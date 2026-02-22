@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { companiesApi, analyticsApi, proposalsApi, savedTalentsApi } from "@/lib/api";
-import type { TalentProfile, Proposal } from "@/lib/api";
+import type { TalentProfile, Proposal } from "@/types/models";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -70,10 +70,18 @@ export default function EmployerDashboard() {
     companiesApi.getById(user.id).then(({ data }) => { if (data) setCompany(data); });
     analyticsApi.getEmployerStats<DashboardStats>(user.id).then(({ data }) => { if (data) setStats(data); });
     proposalsApi.getByEmployer(user.id).then(({ data }) => {
-      if (data) setProposals(data.map((p) => ({ ...p, status: p.status.toLowerCase() })));
+      if (data) setProposals(data);
     });
     savedTalentsApi.getByEmployer(user.id).then(({ data }) => {
-      if (data) setSavedTalent(data);
+      if (data) {
+        // Convert SavedTalent[] to SavedTalentEntry[]
+        setSavedTalent(
+          data.map((s) => ({
+            id: s.id,
+            talent: s.talent as TalentProfile, // s.talent may be undefined/null, but SavedTalentEntry expects TalentProfile
+          }))
+        );
+      }
     });
   }, [user]);
 
@@ -204,7 +212,7 @@ export default function EmployerDashboard() {
                         Active Proposals
                       </p>
                       <p className="text-2xl font-bold">
-                        {proposals.filter((p) => p.status === "pending").length}
+                        {proposals.filter((p) => p.status === "PENDING").length}
                       </p>
                     </div>
                     <MessageSquare className="h-8 w-8 text-primary" />
@@ -291,7 +299,7 @@ export default function EmployerDashboard() {
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Proposal for {proposal.position} • {proposal.budget}
+                          {proposal.talent?.talentProfile?.title ?? ""} • Proposal for {proposal.position} • {proposal.budget}
                         </p>
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -341,12 +349,12 @@ export default function EmployerDashboard() {
                             <div className="flex items-center gap-1">
                               <Star className="h-4 w-4 fill-secondary text-secondary" />
                               <span className="text-sm">
-                                {proposal.talent?.rating ?? "—"}
+                                {proposal.talent?.talentProfile?.rating ?? "—"}
                               </span>
                             </div>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {proposal.talent?.title ?? ""}
+                            {proposal.talent?.talentProfile?.title ?? ""}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
@@ -394,7 +402,7 @@ export default function EmployerDashboard() {
                                 View Profile
                               </Link>
                             </Button>
-                            {proposal.status === "pending" && (
+                            {proposal.status === "PENDING" && (
                               <Button size="sm" variant="outline">
                                 Follow Up
                               </Button>

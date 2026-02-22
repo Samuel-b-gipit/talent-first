@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
-import { proposalsApi, type Proposal } from "@/lib/api";
+import { proposalsApi } from "@/lib/api";
+import type { Proposal } from "@/types/models";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -57,19 +58,19 @@ export default function ProposalsPage() {
 
   useEffect(() => {
     if (!user) return;
-    proposalsApi.getByTalent(user.id).then(({ data }) => {
+    proposalsApi.getByTalent(user.id).then(({ data }: { data: Proposal[] | null }) => {
       if (data) {
         setProposals(
-          data.map((p) => ({
+          (data).map((p) => ({
             ...p,
             status: p.status.toLowerCase(),
             receivedDate: p.createdAt,
             company: {
-              name: p.employer?.companyName ?? p.employer?.user.name ?? "Unknown",
-              logo: p.employer?.logo ?? null,
-              industry: p.employer?.industry ?? "Unknown",
+              name: p.employer?.employerProfile?.companyName ?? p.employer?.name ?? "Unknown",
+              logo: p.employer?.employerProfile?.logo ?? null,
+              industry: p.employer?.employerProfile?.industry ?? "Unknown",
             },
-            companyDescription: p.employer?.description ?? "",
+            companyDescription: p.employer?.employerProfile?.description ?? "",
           }))
         );
       }
