@@ -1,3 +1,4 @@
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,54 +18,11 @@ export default async function HomePage() {
     take: 3,
     orderBy: { rating: "desc" },
   });
-  
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
-                  TF
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">
-                TalentFirst
-              </span>
-            </div>
-            <nav className="hidden md:flex items-center gap-6">
-              <Link
-                href="/browse-talent"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Browse Talent
-              </Link>
-              <Link
-                href="/for-employers"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                For Employers
-              </Link>
-              <Link
-                href="/how-it-works"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                How It Works
-              </Link>
-            </nav>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/login">Sign In</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/signup">Get Started</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Hero Section */}
       <section className="py-20 px-4">

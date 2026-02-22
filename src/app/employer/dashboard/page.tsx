@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { companiesApi, analyticsApi, proposalsApi, savedTalentsApi } from "@/lib/api";
 import type { TalentProfile, Proposal } from "@/lib/api";
@@ -110,34 +111,7 @@ export default function EmployerDashboard() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
-                  TF
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">
-                TalentFirst
-              </span>
-            </Link>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/browse-talent">Browse Talent</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/employer/profile">Company Profile</Link>
-              </Button>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={company?.logo || "/placeholder.svg"} />
-                <AvatarFallback>{(company?.companyName ?? user?.name ?? "??")[0]}</AvatarFallback>
-              </Avatar>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}

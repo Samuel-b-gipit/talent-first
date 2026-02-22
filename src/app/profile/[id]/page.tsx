@@ -1,3 +1,4 @@
+import { Navbar } from "@/components/Navbar";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
@@ -48,30 +49,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
-                  TF
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">
-                TalentFirst
-              </span>
-            </Link>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/browse-talent">Browse More Talent</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/login">Sign In</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="grid lg:grid-cols-3 gap-8">

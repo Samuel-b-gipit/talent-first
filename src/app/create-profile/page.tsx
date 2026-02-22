@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
+import { Navbar } from "@/components/Navbar"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 import { talentsApi } from "@/lib/api"
@@ -101,21 +102,7 @@ export default function CreateProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">TF</span>
-              </div>
-              <span className="text-xl font-bold text-foreground">TalentFirst</span>
-            </Link>
-            <Button variant="outline" asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="mb-8">

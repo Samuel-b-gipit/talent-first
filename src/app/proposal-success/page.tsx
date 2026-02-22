@@ -1,3 +1,4 @@
+import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,30 +14,7 @@ export default function ProposalSuccessPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
-                  TF
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">
-                TalentFirst
-              </span>
-            </Link>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/employer/dashboard">Dashboard</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/browse-talent">Browse More Talent</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="container mx-auto px-4 py-16 max-w-2xl">
         <div className="text-center mb-8">

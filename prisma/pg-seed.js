@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { Client } = require('pg');
+const bcrypt = require('bcryptjs');
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
@@ -10,6 +11,8 @@ async function main() {
     await client.connect();
     console.log('✅ Connected to PostgreSQL!');
 
+    const hashedPassword = await bcrypt.hash('password1234', 10);
+
     // Delete all users (cascade to related tables)
     await client.query('DELETE FROM users');
     console.log('🗑️  Deleted all users and related data.');
@@ -17,10 +20,10 @@ async function main() {
     // Realistic employers
     await client.query(`
       INSERT INTO users (id, email, password, name, role, "createdAt", "updatedAt") VALUES
-        ('employer-1', 'susan@innovatek.com', 'password1234', 'Susan Lee', 'EMPLOYER', NOW(), NOW()),
-        ('employer-2', 'david@medigen.com', 'password1234', 'David Kim', 'EMPLOYER', NOW(), NOW())
+        ('employer-1', 'susan@innovatek.com', $1, 'Susan Lee', 'EMPLOYER', NOW(), NOW()),
+        ('employer-2', 'david@medigen.com', $1, 'David Kim', 'EMPLOYER', NOW(), NOW())
       ON CONFLICT (id) DO NOTHING;
-    `);
+    `, [hashedPassword]);
     await client.query(`
       INSERT INTO employer_profiles (id, "userId", "companyName", industry, size, location, description, culture, benefits, "techStack", "remotePolicy", "isHiring", "website", linkedin, "createdAt", "updatedAt") VALUES
         ('emp-profile-1', 'employer-1', 'Innovatek', 'Technology', '201-500', 'San Francisco, CA', 'Building the future of AI-driven SaaS.', 'Fast-paced, collaborative, and innovative.', '{"Health insurance","401k","Remote work"}', '{"React","Node.js","AWS"}', 'hybrid', true, 'https://innovatek.com', 'https://linkedin.com/company/innovatek', NOW(), NOW()),
@@ -142,9 +145,9 @@ async function main() {
     for (const t of talents) {
       await client.query(`
         INSERT INTO users (id, email, password, name, role, "createdAt", "updatedAt") VALUES
-          ($1, $2, 'password1234', $3, 'TALENT', NOW(), NOW())
+          ($1, $2, $4, $3, 'TALENT', NOW(), NOW())
         ON CONFLICT (id) DO NOTHING;
-      `, [t.id, t.email, t.name]);
+      `, [t.id, t.email, t.name, hashedPassword]);
       await client.query(`
         INSERT INTO talent_profiles (id, "userId", name, title, location, skills, experience, rate, availability, bio, portfolio, linkedin, github, website, "openToRemote", "openToContract", rating, "reviewCount", "createdAt", "updatedAt") VALUES
           ($1, $2, $3, $4, $5, $6, $7, $8, 'full-time', $9, $10, $11, $12, $13, true, $14, $15, $16, NOW(), NOW())
