@@ -208,8 +208,8 @@ export default function BrowseTalentPage() {
                     <Button size="sm" className="flex-1" asChild>
                       <Link href={`/profile/${talent.id}`}>View Profile</Link>
                     </Button>
-                    <Button size="sm" variant="outline">
-                      Send Proposal
+                    <Button size="sm" variant="outline" asChild>
+                      <Link href={`/send-proposal/${talent.id}`}>Send Proposal</Link>
                     </Button>
                   </div>
                 </div>

@@ -74,9 +74,6 @@ export function Navbar() {
               {/* Talent */}
               {user?.role === "TALENT" && (
                 <>
-                  <Button variant="ghost" asChild>
-                    <Link href="/browse-talent">Browse Talent</Link>
-                  </Button>
                   <Button variant="outline" asChild>
                     <Link href="/proposals">My Proposals</Link>
                   </Button>

@@ -45,7 +45,7 @@ export function middleware(request: NextRequest) {
   // Redirect authenticated users away from login/signup and the public home page
   if (isAuthenticated && (matchesRoute(pathname, AUTH_ROUTES) || pathname === "/")) {
     const destination =
-      userRole === "EMPLOYER" ? "/employer/dashboard" : "/recommendations";
+      userRole === "EMPLOYER" ? "/employer/dashboard" : "/proposals";
     return NextResponse.redirect(new URL(destination, request.url));
   }
 

@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/Navbar";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { verifySession } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,12 +29,18 @@ import Link from "next/link";
 export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  const profile = await prisma.talentProfile.findFirst({
-    where: { OR: [{ id }, { userId: id }] },
-    include: { user: true },
-  });
+  const [profile, currentUser] = await Promise.all([
+    prisma.talentProfile.findFirst({
+      where: { OR: [{ id }, { userId: id }] },
+      include: { user: true },
+    }),
+    verifySession(),
+  ]);
 
   if (!profile) notFound();
+
+  const isEmployer = currentUser?.role === "EMPLOYER";
+  const isOwnProfile = currentUser?.id === profile.userId;
 
   const similarTalent = await prisma.talentProfile.findMany({
     where: {
@@ -226,25 +233,42 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Contact Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact {profile.name.split(" ")[0]}</CardTitle>
-                <CardDescription>Send a proposal or message</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full" size="lg" asChild>
-                  <Link href={`/send-proposal/${profile.userId}`}>
-                    <Mail className="mr-2 h-4 w-4" />
-                    Send Proposal
-                  </Link>
-                </Button>
-                <Button variant="outline" className="w-full bg-transparent">
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  Send Message
-                </Button>
-              </CardContent>
-            </Card>
+            {/* Contact Card — only visible to employers viewing someone else's profile */}
+            {isEmployer && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact {profile.name.split(" ")[0]}</CardTitle>
+                  <CardDescription>Send a proposal or message</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Button className="w-full" size="lg" asChild>
+                    <Link href={`/send-proposal/${profile.userId}`}>
+                      <Mail className="mr-2 h-4 w-4" />
+                      Send Proposal
+                    </Link>
+                  </Button>
+                  <Button variant="outline" className="w-full bg-transparent">
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Send Message
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Own profile edit card — visible to the talent who owns this profile */}
+            {isOwnProfile && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Profile</CardTitle>
+                  <CardDescription>Manage how employers see you</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button className="w-full" asChild>
+                    <Link href="/create-profile">Edit Profile</Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Stats Card */}
             <Card>

@@ -41,6 +41,7 @@ export const api = {
 // ─── Typed helpers ────────────────────────────────────────────────────────────
 
 import type { User, TalentProfile, EmployerProfile, Proposal, SavedTalent, Message, Session } from "@/types/models";
+export type { TalentProfile, EmployerProfile, Proposal, SavedTalent, User };
 
 // ─── Named endpoint wrappers ──────────────────────────────────────────────────
 
@@ -58,9 +59,19 @@ export const authApi = {
 };
 
 export const talentsApi = {
-  getAll: () => api.get<TalentProfile[]>("/api/talents"),
+  getAll: (params?: { skills?: string; location?: string; minRate?: number; maxRate?: number }) => {
+    const qs = params
+      ? "?" + new URLSearchParams(
+          Object.entries(params)
+            .filter(([, v]) => v !== undefined)
+            .map(([k, v]) => [k, String(v)])
+        ).toString()
+      : "";
+    return api.get<TalentProfile[]>(`/api/talents${qs}`);
+  },
   getFeatured: () => api.get<TalentProfile[]>("/api/talents?limit=3"),
   getById: (id: string) => api.get<TalentProfile>(`/api/talents/${id}`),
+  search: (q: string) => api.get<TalentProfile[]>(`/api/talents/search?q=${encodeURIComponent(q)}`),
   create: (payload: unknown) => api.post<TalentProfile>("/api/talents", payload),
 };
 
@@ -79,10 +90,25 @@ export const proposalsApi = {
 
 export const savedTalentsApi = {
   getByEmployer: (employerId: string) => api.get<SavedTalent[]>(`/api/saved-talents?employerId=${employerId}`),
+  save: (employerId: string, talentId: string) => api.post<SavedTalent>("/api/saved-talents", { employerId, talentId }),
   remove: (id: string) => api.del(`/api/saved-talents/${id}`),
 };
 
+export type MarketInsight = { skill: string; count: number; avgRate: number };
+export type EmployerStats = { sent: number; accepted: number; responseRate: number; avgResponseTime: number | null };
+
 export const analyticsApi = {
-  getEmployerStats: <T>(employerId: string) =>
-    api.get<T>(`/api/analytics/employer?employerId=${employerId}`),
+  getEmployerStats: (employerId: string) =>
+    api.get<EmployerStats>(`/api/analytics/employer?employerId=${employerId}`),
+  getMarketInsights: () =>
+    api.get<MarketInsight[]>(`/api/analytics/market-insights`),
+};
+
+export const recommendationsApi = {
+  getForYou: (employerId: string) =>
+    api.get<TalentProfile[]>(`/api/recommendations/for-you?employerId=${employerId}`),
+  getTrending: () =>
+    api.get<TalentProfile[]>(`/api/recommendations/trending`),
+  getSimilar: (employerId: string) =>
+    api.get<TalentProfile[]>(`/api/recommendations/similar?employerId=${employerId}`),
 };
