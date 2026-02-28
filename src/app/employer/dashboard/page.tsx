@@ -99,7 +99,7 @@ export default function EmployerDashboard() {
   };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "pending":
         return <Clock className="h-4 w-4 text-secondary" />;
       case "accepted":
@@ -112,7 +112,7 @@ export default function EmployerDashboard() {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "pending":
         return "secondary";
       case "accepted":
@@ -122,6 +122,12 @@ export default function EmployerDashboard() {
       default:
         return "secondary";
     }
+  };
+
+  const getStatusClassName = (status: string) => {
+    if (status.toLowerCase() === "accepted")
+      return "bg-green-500 hover:bg-green-600 text-white border-green-500";
+    return "";
   };
 
   return (
@@ -291,7 +297,10 @@ export default function EmployerDashboard() {
                           <span className="font-medium">
                             {proposal.talent?.name ?? "Unknown"}
                           </span>
-                          <Badge variant={getStatusColor(proposal.status)}>
+                          <Badge
+                            variant={getStatusColor(proposal.status)}
+                            className={getStatusClassName(proposal.status)}
+                          >
                             {proposal.status}
                           </Badge>
                         </div>
@@ -363,7 +372,10 @@ export default function EmployerDashboard() {
                             </div>
                             <div className="flex items-center gap-2">
                               {getStatusIcon(proposal.status)}
-                              <Badge variant={getStatusColor(proposal.status)}>
+                              <Badge
+                                variant={getStatusColor(proposal.status)}
+                                className={getStatusClassName(proposal.status)}
+                              >
                                 {proposal.status}
                               </Badge>
                             </div>
@@ -583,9 +595,9 @@ export default function EmployerDashboard() {
                         Profile Views
                       </span>
                       <span className="font-medium">
-                        {stats?.sent != null
-                          ? (stats.sent * 54).toLocaleString()
-                          : "—"}
+                        {stats?.sent == null
+                          ? "—"
+                          : (stats.sent * 54).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
