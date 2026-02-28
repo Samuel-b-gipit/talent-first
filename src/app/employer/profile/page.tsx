@@ -27,7 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { Building2, MapPin, Globe, Plus, X } from "lucide-react";
+import { Building2, MapPin, Globe, Plus, X, Camera } from "lucide-react";
 import Link from "next/link";
 
 export default function CompanyProfilePage() {
@@ -48,6 +48,7 @@ export default function CompanyProfilePage() {
     foundedYear: "",
     linkedin: "",
     twitter: "",
+    logo: "",
   });
 
   const [newBenefit, setNewBenefit] = useState("");
@@ -56,6 +57,7 @@ export default function CompanyProfilePage() {
   const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [logoPreview, setLogoPreview] = useState("");
 
   // Load existing profile
   useEffect(() => {
@@ -78,6 +80,7 @@ export default function CompanyProfilePage() {
           foundedYear: data.foundedYear ?? "",
           linkedin: data.linkedin ?? "",
           twitter: data.twitter ?? "",
+          logo: data.logo ?? "",
         });
       }
       setIsFetching(false);
@@ -92,7 +95,7 @@ export default function CompanyProfilePage() {
 
     const payload = {
       companyName: formData.companyName,
-      industry: formData.industry,
+      industry: formData.industry || undefined,
       size: formData.companySize,
       location: formData.location,
       website: formData.website || undefined,
@@ -105,6 +108,7 @@ export default function CompanyProfilePage() {
       foundedYear: formData.foundedYear || undefined,
       linkedin: formData.linkedin || undefined,
       twitter: formData.twitter || undefined,
+      logo: formData.logo || undefined,
     };
 
     const { error: apiError } = profileId
@@ -153,6 +157,21 @@ export default function CompanyProfilePage() {
     }));
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoPreview(URL.createObjectURL(file));
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: form,
+      credentials: "include",
+    });
+    const json = await res.json();
+    if (json.url) setFormData((prev) => ({ ...prev, logo: json.url }));
+  };
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -185,10 +204,34 @@ export default function CompanyProfilePage() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4 mb-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src="/generic-company-logo.png" />
-                  <AvatarFallback className="text-2xl">TC</AvatarFallback>
+                  <AvatarImage src={logoPreview || formData.logo || ""} />
+                  <AvatarFallback className="text-2xl">
+                    {formData.companyName?.[0]?.toUpperCase() || "C"}
+                  </AvatarFallback>
                 </Avatar>
-                <Button variant="outline">Upload Logo</Button>
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={() =>
+                      document.getElementById("logo-upload")?.click()
+                    }
+                  >
+                    <Camera className="h-4 w-4" />
+                    Upload Logo
+                  </Button>
+                  <input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleLogoUpload}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    JPG, PNG or WebP. Max 5MB.
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -534,7 +577,11 @@ export default function CompanyProfilePage() {
               disabled={isLoading || isFetching}
               className="flex-1"
             >
-              {isLoading ? "Saving..." : profileId ? "Update Profile" : "Create Profile"}
+              {isLoading
+                ? "Saving..."
+                : profileId
+                  ? "Update Profile"
+                  : "Create Profile"}
             </Button>
             <Button type="button" variant="outline" size="lg" asChild>
               <Link href="/employer/dashboard">Cancel</Link>

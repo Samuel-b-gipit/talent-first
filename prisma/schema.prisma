@@ -49,6 +49,7 @@ model TalentProfile {
   rate        Float
   availability String
   bio         String   @db.Text
+  avatarUrl   String?
   portfolio   String?
   linkedin    String?
   github      String?

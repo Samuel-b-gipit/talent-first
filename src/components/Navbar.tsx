@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -86,6 +86,7 @@ export function Navbar() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Avatar className="h-8 w-8 cursor-pointer">
+                        <AvatarImage src={user.avatarUrl ?? ""} />
                         <AvatarFallback>
                           {user.name?.[0]?.toUpperCase() ?? "E"}
                         </AvatarFallback>
@@ -130,6 +131,7 @@ export function Navbar() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Avatar className="h-8 w-8 cursor-pointer">
+                        <AvatarImage src={user.avatarUrl ?? ""} />
                         <AvatarFallback>
                           {user.name?.[0]?.toUpperCase() ?? "T"}
                         </AvatarFallback>

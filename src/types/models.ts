@@ -29,6 +29,7 @@ export interface TalentProfile {
   rate: number;
   availability: string;
   bio: string;
+  avatarUrl?: string | null;
   portfolio?: string | null;
   linkedin?: string | null;
   github?: string | null;

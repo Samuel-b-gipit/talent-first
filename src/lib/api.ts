@@ -73,6 +73,7 @@ export const talentsApi = {
   getById: (id: string) => api.get<TalentProfile>(`/api/talents/${id}`),
   search: (q: string) => api.get<TalentProfile[]>(`/api/talents/search?q=${encodeURIComponent(q)}`),
   create: (payload: unknown) => api.post<TalentProfile>("/api/talents", payload),
+  update: (id: string, payload: unknown) => api.put<TalentProfile>(`/api/talents/${id}`, payload),
 };
 
 export const companiesApi = {

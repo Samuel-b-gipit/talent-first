@@ -74,7 +74,7 @@ export default async function ProfilePage({
               <CardContent className="pt-6">
                 <div className="flex flex-col sm:flex-row gap-6">
                   <Avatar className="h-24 w-24">
-                    <AvatarImage src="/professional-headshot.png" />
+                    <AvatarImage src={profile.avatarUrl ?? ""} />
                     <AvatarFallback className="text-2xl">
                       {profile.name
                         .split(" ")
