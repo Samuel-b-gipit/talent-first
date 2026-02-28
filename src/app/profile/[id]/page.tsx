@@ -26,7 +26,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-export default async function ProfilePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function ProfilePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
 
   const [profile, currentUser] = await Promise.all([
@@ -51,7 +55,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
     select: { id: true, name: true, title: true, rate: true },
   });
 
-  const joinedDate = new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const joinedDate = new Date(profile.createdAt).toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -104,7 +111,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
 
                       <div className="text-right">
                         <div className="text-2xl font-bold text-primary">
-                      ${profile.rate}/hour
+                          ${profile.rate}/hour
                         </div>
                         <div className="text-sm text-muted-foreground">
                           {profile.availability}
@@ -247,9 +254,15 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                       Send Proposal
                     </Link>
                   </Button>
-                  <Button variant="outline" className="w-full bg-transparent">
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Send Message
+                  <Button
+                    variant="outline"
+                    className="w-full bg-transparent"
+                    asChild
+                  >
+                    <Link href={`/send-proposal/${profile.userId}`}>
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Send Message
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -260,7 +273,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               <Card>
                 <CardHeader>
                   <CardTitle>Your Profile</CardTitle>
-                  <CardDescription>Manage how employers see you</CardDescription>
+                  <CardDescription>
+                    Manage how employers see you
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button className="w-full" asChild>
@@ -289,12 +304,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
                 </div>
                 <Separator />
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">
-                    Reviews
-                  </span>
-                  <span className="font-medium">
-                    {profile.reviewCount}
-                  </span>
+                  <span className="text-muted-foreground">Reviews</span>
+                  <span className="font-medium">{profile.reviewCount}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between">
@@ -316,28 +327,35 @@ export default async function ProfilePage({ params }: { params: Promise<{ id: st
               </CardHeader>
               <CardContent className="space-y-3">
                 {similarTalent.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No similar talent found.</p>
-                ) : similarTalent.map((talent) => (
-                  <Link
-                    key={talent.id}
-                    href={`/profile/${talent.id}`}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer block"
-                  >
-                    <div>
-                      <div className="font-medium text-sm">{talent.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {talent.title}
+                  <p className="text-sm text-muted-foreground">
+                    No similar talent found.
+                  </p>
+                ) : (
+                  similarTalent.map((talent) => (
+                    <Link
+                      key={talent.id}
+                      href={`/profile/${talent.id}`}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer block"
+                    >
+                      <div>
+                        <div className="font-medium text-sm">{talent.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {talent.title}
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-sm font-medium">${talent.rate}/hr</div>
-                  </Link>
-                ))}
+                      <div className="text-sm font-medium">
+                        ${talent.rate}/hr
+                      </div>
+                    </Link>
+                  ))
+                )}
                 <Button
                   variant="outline"
                   size="sm"
                   className="w-full bg-transparent"
+                  asChild
                 >
-                  View More
+                  <Link href="/browse-talent">View More</Link>
                 </Button>
               </CardContent>
             </Card>

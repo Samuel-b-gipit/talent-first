@@ -3,7 +3,12 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
-import { companiesApi, analyticsApi, proposalsApi, savedTalentsApi } from "@/lib/api";
+import {
+  companiesApi,
+  analyticsApi,
+  proposalsApi,
+  savedTalentsApi,
+} from "@/lib/api";
 import type { TalentProfile, Proposal } from "@/types/models";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,7 +56,6 @@ interface DashboardStats {
   avgResponseTime?: number | null;
 }
 
-
 interface SavedTalentEntry {
   id: string;
   talent: TalentProfile;
@@ -67,8 +71,12 @@ export default function EmployerDashboard() {
 
   useEffect(() => {
     if (!user) return;
-    companiesApi.getById(user.id).then(({ data }) => { if (data) setCompany(data); });
-    analyticsApi.getEmployerStats<DashboardStats>(user.id).then(({ data }) => { if (data) setStats(data); });
+    companiesApi.getById(user.id).then(({ data }) => {
+      if (data) setCompany(data);
+    });
+    analyticsApi.getEmployerStats(user.id).then(({ data }) => {
+      if (data) setStats(data);
+    });
     proposalsApi.getByEmployer(user.id).then(({ data }) => {
       if (data) setProposals(data);
     });
@@ -79,7 +87,7 @@ export default function EmployerDashboard() {
           data.map((s) => ({
             id: s.id,
             talent: s.talent as TalentProfile, // s.talent may be undefined/null, but SavedTalentEntry expects TalentProfile
-          }))
+          })),
         );
       }
     });
@@ -127,14 +135,17 @@ export default function EmployerDashboard() {
           <div className="flex items-center gap-4 mb-4">
             <Avatar className="h-16 w-16">
               <AvatarImage src={company?.logo || "/placeholder.svg"} />
-              <AvatarFallback className="text-xl">{(company?.companyName ?? user?.name ?? "?")[0]}</AvatarFallback>
+              <AvatarFallback className="text-xl">
+                {(company?.companyName ?? user?.name ?? "?")[0]}
+              </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
                 {company?.companyName ?? user?.name ?? "Company Dashboard"}
               </h1>
               <p className="text-muted-foreground">
-                {company?.industry ?? ""}{company?.size ? ` • ${company.size}` : ""}
+                {company?.industry ?? ""}
+                {company?.size ? ` • ${company.size}` : ""}
               </p>
             </div>
           </div>
@@ -179,9 +190,7 @@ export default function EmployerDashboard() {
                       <p className="text-sm font-medium text-muted-foreground">
                         Proposals Sent
                       </p>
-                      <p className="text-2xl font-bold">
-                        {stats?.sent ?? 0}
-                      </p>
+                      <p className="text-2xl font-bold">{stats?.sent ?? 0}</p>
                     </div>
                     <Send className="h-8 w-8 text-secondary" />
                   </div>
@@ -196,7 +205,9 @@ export default function EmployerDashboard() {
                         Response Rate
                       </p>
                       <p className="text-2xl font-bold">
-                        {stats ? `${Math.round(stats.responseRate * 100)}%` : "—"}
+                        {stats
+                          ? `${Math.round(stats.responseRate * 100)}%`
+                          : "—"}
                       </p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-green-500" />
@@ -230,21 +241,11 @@ export default function EmployerDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
+                <div className="grid md:grid-cols-2 gap-4">
                   <Button className="h-20 flex-col gap-2" asChild>
                     <Link href="/browse-talent">
                       <Users className="h-6 w-6" />
                       Browse Talent
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col gap-2 bg-transparent"
-                    asChild
-                  >
-                    <Link href="/employer/post-job">
-                      <Building2 className="h-6 w-6" />
-                      Post Job Opening
                     </Link>
                   </Button>
                   <Button
@@ -271,15 +272,13 @@ export default function EmployerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                {proposals.slice(0, 3).map((proposal) => (
+                  {proposals.slice(0, 3).map((proposal) => (
                     <div
                       key={proposal.id}
                       className="flex items-center gap-4 p-4 border rounded-lg"
                     >
                       <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src="/placeholder.svg"
-                        />
+                        <AvatarImage src="/placeholder.svg" />
                         <AvatarFallback>
                           {(proposal.talent?.name ?? "?")
                             .split(" ")
@@ -292,14 +291,13 @@ export default function EmployerDashboard() {
                           <span className="font-medium">
                             {proposal.talent?.name ?? "Unknown"}
                           </span>
-                          <Badge
-                            variant={getStatusColor(proposal.status)}
-                          >
+                          <Badge variant={getStatusColor(proposal.status)}>
                             {proposal.status}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          {proposal.talent?.talentProfile?.title ?? ""} • Proposal for {proposal.position} • {proposal.budget}
+                          {proposal.talent?.talentProfile?.title ?? ""} •
+                          Proposal for {proposal.position} • {proposal.budget}
                         </p>
                       </div>
                       <div className="text-sm text-muted-foreground">
@@ -323,97 +321,104 @@ export default function EmployerDashboard() {
 
             <div className="space-y-4">
               {proposals.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No proposals sent yet. <Link href="/browse-talent" className="underline">Browse talent</Link> to get started.</p>
-              ) : proposals.map((proposal) => (
-                <Card key={proposal.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src="/placeholder.svg"
-                        />
-                        <AvatarFallback>
-                          {(proposal.talent?.name ?? "?")
-                            .split(" ")
-                            .map((n: string) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
+                <p className="text-center text-muted-foreground py-8">
+                  No proposals sent yet.{" "}
+                  <Link href="/browse-talent" className="underline">
+                    Browse talent
+                  </Link>{" "}
+                  to get started.
+                </p>
+              ) : (
+                proposals.map((proposal) => (
+                  <Card key={proposal.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src="/placeholder.svg" />
+                          <AvatarFallback>
+                            {(proposal.talent?.name ?? "?")
+                              .split(" ")
+                              .map((n: string) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold">
+                                  {proposal.talent?.name ?? "Unknown"}
+                                </h3>
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-4 w-4 fill-secondary text-secondary" />
+                                  <span className="text-sm">
+                                    {proposal.talent?.talentProfile?.rating ??
+                                      "—"}
+                                  </span>
+                                </div>
+                              </div>
+                              <p className="text-sm text-muted-foreground">
+                                {proposal.talent?.talentProfile?.title ?? ""}
+                              </p>
+                            </div>
                             <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">
-                              {proposal.talent?.name ?? "Unknown"}
-                            </h3>
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-secondary text-secondary" />
-                              <span className="text-sm">
-                                {proposal.talent?.talentProfile?.rating ?? "—"}
-                              </span>
+                              {getStatusIcon(proposal.status)}
+                              <Badge variant={getStatusColor(proposal.status)}>
+                                {proposal.status}
+                              </Badge>
                             </div>
                           </div>
-                          <p className="text-sm text-muted-foreground">
-                            {proposal.talent?.talentProfile?.title ?? ""}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(proposal.status)}
-                            <Badge
-                              variant={getStatusColor(proposal.status)}
-                            >
-                              {proposal.status}
-                            </Badge>
-                          </div>
-                        </div>
 
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <p className="text-sm font-medium">Position</p>
+                          <div className="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                              <p className="text-sm font-medium">Position</p>
+                              <p className="text-sm text-muted-foreground">
+                                {proposal.position}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Budget</p>
+                              <p className="text-sm text-muted-foreground">
+                                {proposal.budget}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mb-4">
+                            <p className="text-sm font-medium mb-1">Message</p>
                             <p className="text-sm text-muted-foreground">
-                              {proposal.position}
+                              {proposal.message}
                             </p>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium">Budget</p>
+
+                          <div className="flex items-center justify-between">
                             <p className="text-sm text-muted-foreground">
-                              {proposal.budget}
+                              Sent on{" "}
+                              {new Date(
+                                proposal.createdAt,
+                              ).toLocaleDateString()}
                             </p>
-                          </div>
-                        </div>
-
-                        <div className="mb-4">
-                          <p className="text-sm font-medium mb-1">Message</p>
-                          <p className="text-sm text-muted-foreground">
-                            {proposal.message}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-muted-foreground">
-                            Sent on{" "}
-                            {new Date(proposal.createdAt).toLocaleDateString()}
-                          </p>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" asChild>
-                              <Link
-                                href={`/profile/${proposal.talent?.id ?? ""}`}
-                              >
-                                View Profile
-                              </Link>
-                            </Button>
-                            {proposal.status === "PENDING" && (
-                              <Button size="sm" variant="outline">
-                                Follow Up
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" asChild>
+                                <Link
+                                  href={`/profile/${proposal.talent?.id ?? ""}`}
+                                >
+                                  View Profile
+                                </Link>
                               </Button>
-                            )}
+                              {proposal.status === "PENDING" && (
+                                <Button size="sm" variant="outline">
+                                  Follow Up
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -428,87 +433,95 @@ export default function EmployerDashboard() {
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {savedTalent.length === 0 ? (
-                <p className="col-span-3 text-center text-muted-foreground py-8">No saved talent yet.</p>
-              ) : savedTalent.map((entry) => {
-                const talent = entry.talent;
-                return (
-                <Card
-                  key={talent.id}
-                  className="hover:shadow-lg transition-shadow"
-                >
-                  <CardHeader>
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={`/abstract-geometric-shapes.png?height=48&width=48&query=${talent.name} headshot`}
-                        />
-                        <AvatarFallback>
-                          {talent.name
-                            .split(" ")
-                            .map((n: string) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg truncate">
-                          {talent.name}
-                        </CardTitle>
-                        <CardDescription>{talent.title}</CardDescription>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Star className="h-4 w-4 fill-secondary text-secondary" />
-                          <span className="text-sm font-medium">
-                            {talent.rating}
-                          </span>
+                <p className="col-span-3 text-center text-muted-foreground py-8">
+                  No saved talent yet.
+                </p>
+              ) : (
+                savedTalent.map((entry) => {
+                  const talent = entry.talent;
+                  return (
+                    <Card
+                      key={talent.id}
+                      className="hover:shadow-lg transition-shadow"
+                    >
+                      <CardHeader>
+                        <div className="flex items-start gap-4">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage
+                              src={`/abstract-geometric-shapes.png?height=48&width=48&query=${talent.name} headshot`}
+                            />
+                            <AvatarFallback>
+                              {talent.name
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-lg truncate">
+                              {talent.name}
+                            </CardTitle>
+                            <CardDescription>{talent.title}</CardDescription>
+                            <div className="flex items-center gap-1 mt-1">
+                              <Star className="h-4 w-4 fill-secondary text-secondary" />
+                              <span className="text-sm font-medium">
+                                {talent.rating}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        {talent.location}
-                      </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            {talent.location}
+                          </div>
 
-                      <div className="flex flex-wrap gap-1">
-                        {talent.skills.map((skill, index) => (
-                          <Badge
-                            key={skill + index}
-                            variant="secondary"
-                            className="text-xs"
-                          >
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
+                          <div className="flex flex-wrap gap-1">
+                            {talent.skills.map((skill, index) => (
+                              <Badge
+                                key={skill + index}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <DollarSign className="h-4 w-4 text-primary" />
-                          <span className="font-semibold text-primary">
-                            ${talent.rate}/hr
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-4 w-4 text-primary" />
+                              <span className="font-semibold text-primary">
+                                ${talent.rate}/hr
+                              </span>
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {talent.availability}
+                            </Badge>
+                          </div>
+
+                          <div className="flex gap-2 pt-2">
+                            <Button size="sm" className="flex-1" asChild>
+                              <Link href={`/profile/${talent.id}`}>
+                                View Profile
+                              </Link>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleUnsave(entry.id)}
+                            >
+                              Unsave
+                            </Button>
+                          </div>
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          {talent.availability}
-                        </Badge>
-                      </div>
-
-                      <div className="flex gap-2 pt-2">
-                        <Button size="sm" className="flex-1" asChild>
-                          <Link href={`/profile/${talent.id}`}>
-                            View Profile
-                          </Link>
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => handleUnsave(entry.id)}>
-                          Unsave
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                );
-              })}
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
             </div>
           </TabsContent>
 
@@ -528,16 +541,16 @@ export default function EmployerDashboard() {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total Sent</span>
-                      <span className="font-medium">
-                        {stats?.sent ?? 0}
-                      </span>
+                      <span className="font-medium">{stats?.sent ?? 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">
                         Response Rate
                       </span>
                       <span className="font-medium text-green-500">
-                        {stats ? `${Math.round(stats.responseRate * 100)}%` : "—"}
+                        {stats
+                          ? `${Math.round(stats.responseRate * 100)}%`
+                          : "—"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -570,7 +583,9 @@ export default function EmployerDashboard() {
                         Profile Views
                       </span>
                       <span className="font-medium">
-                        {stats?.sent != null ? (stats.sent * 54).toLocaleString() : "—"}
+                        {stats?.sent != null
+                          ? (stats.sent * 54).toLocaleString()
+                          : "—"}
                       </span>
                     </div>
                     <div className="flex justify-between">

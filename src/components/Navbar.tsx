@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LogOut } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
+import { LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
@@ -16,9 +24,13 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">TF</span>
+              <span className="text-primary-foreground font-bold text-sm">
+                TF
+              </span>
             </div>
-            <span className="text-xl font-bold text-foreground">TalentFirst</span>
+            <span className="text-xl font-bold text-foreground">
+              TalentFirst
+            </span>
           </Link>
 
           {/* Right side — only render once auth state is known */}
@@ -28,13 +40,22 @@ export function Navbar() {
               {!user && (
                 <>
                   <nav className="hidden md:flex items-center gap-6 mr-2">
-                    <Link href="/browse-talent" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link
+                      href="/browse-talent"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       Browse Talent
                     </Link>
-                    <Link href="/for-employers" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link
+                      href="/for-employers"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       For Employers
                     </Link>
-                    <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
+                    <Link
+                      href="/how-it-works"
+                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       How It Works
                     </Link>
                   </nav>
@@ -62,12 +83,38 @@ export function Navbar() {
                   <Button variant="outline" asChild>
                     <Link href="/employer/profile">Company Profile</Link>
                   </Button>
-                  <Avatar className="h-8 w-8 cursor-pointer" onClick={logout}>
-                    <AvatarFallback>{user.name?.[0]?.toUpperCase() ?? "E"}</AvatarFallback>
-                  </Avatar>
-                  <Button variant="ghost" size="icon" onClick={logout} title="Sign out">
-                    <LogOut className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Avatar className="h-8 w-8 cursor-pointer">
+                        <AvatarFallback>
+                          {user.name?.[0]?.toUpperCase() ?? "E"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuLabel className="font-normal">
+                        <p className="font-medium text-sm">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/employer/profile">
+                          <User className="mr-2 h-4 w-4" />
+                          Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={logout}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </>
               )}
 
@@ -80,12 +127,38 @@ export function Navbar() {
                   <Button variant="outline" asChild>
                     <Link href={`/profile/${user.id}`}>My Profile</Link>
                   </Button>
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>{user.name?.[0]?.toUpperCase() ?? "T"}</AvatarFallback>
-                  </Avatar>
-                  <Button variant="ghost" size="icon" onClick={logout} title="Sign out">
-                    <LogOut className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Avatar className="h-8 w-8 cursor-pointer">
+                        <AvatarFallback>
+                          {user.name?.[0]?.toUpperCase() ?? "T"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuLabel className="font-normal">
+                        <p className="font-medium text-sm">{user.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href={`/profile/${user.id}`}>
+                          <User className="mr-2 h-4 w-4" />
+                          My Profile
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={logout}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </>
               )}
             </div>

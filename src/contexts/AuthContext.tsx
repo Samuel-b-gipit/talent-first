@@ -1,6 +1,12 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/api";
 
@@ -19,13 +25,16 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ error?: string }>;
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<{ error?: string; user?: AuthUser }>;
   register: (
     name: string,
     email: string,
     password: string,
-    role: UserRole
-  ) => Promise<{ error?: string }>;
+    role: UserRole,
+  ) => Promise<{ error?: string; user?: AuthUser }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -52,13 +61,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [refreshUser]);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<{ error?: string }> => {
+    async (
+      email: string,
+      password: string,
+    ): Promise<{ error?: string; user?: AuthUser }> => {
       const { data, error } = await authApi.login(email, password);
       if (error || !data) return { error: error ?? "Login failed" };
       setUser(data.user);
-      return {};
+      return { user: data.user };
     },
-    []
+    [],
   );
 
   const register = useCallback(
@@ -66,14 +78,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: string,
       email: string,
       password: string,
-      role: UserRole
-    ): Promise<{ error?: string }> => {
-      const { data, error } = await authApi.register(name, email, password, role);
+      role: UserRole,
+    ): Promise<{ error?: string; user?: AuthUser }> => {
+      const { data, error } = await authApi.register(
+        name,
+        email,
+        password,
+        role,
+      );
       if (error || !data) return { error: error ?? "Registration failed" };
       setUser(data.user);
-      return {};
+      return { user: data.user };
     },
-    []
+    [],
   );
 
   const logout = useCallback(async () => {
