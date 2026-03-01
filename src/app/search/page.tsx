@@ -60,7 +60,6 @@ const skillSuggestions = [
 
 export default function SearchPage() {
   const [talents, setTalents] = useState<TalentProfile[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     skills: [] as string[],
@@ -84,7 +83,6 @@ export default function SearchPage() {
   useEffect(() => {
     talentsApi.getAll().then(({ data }) => {
       if (data) setTalents(data);
-      setIsLoading(false);
     });
   }, []);
 
@@ -94,7 +92,7 @@ export default function SearchPage() {
   useEffect(() => {
     if (searchQuery.length > 2) {
       const suggestions = skillSuggestions.filter((skill) =>
-        skill.toLowerCase().includes(searchQuery.toLowerCase())
+        skill.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setSearchSuggestions(suggestions.slice(0, 5));
     } else {
@@ -110,7 +108,7 @@ export default function SearchPage() {
       talent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       talent.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       talent.skills.some((skill) =>
-        skill.toLowerCase().includes(searchQuery.toLowerCase())
+        skill.toLowerCase().includes(searchQuery.toLowerCase()),
       ) ||
       talent.bio.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -119,8 +117,8 @@ export default function SearchPage() {
       filters.skills.length === 0 ||
       filters.skills.some((filterSkill) =>
         talent.skills.some((talentSkill) =>
-          talentSkill.toLowerCase().includes(filterSkill.toLowerCase())
-        )
+          talentSkill.toLowerCase().includes(filterSkill.toLowerCase()),
+        ),
       );
 
     // Location filter
@@ -174,9 +172,13 @@ export default function SearchPage() {
       case "rate-high":
         return b.rate - a.rate;
       case "experience":
-        return parseExperienceMin(b.experience) - parseExperienceMin(a.experience);
+        return (
+          parseExperienceMin(b.experience) - parseExperienceMin(a.experience)
+        );
       case "recent":
-        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        return (
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
       default:
         return 0; // relevance
     }
@@ -231,7 +233,9 @@ export default function SearchPage() {
       <div className="container mx-auto px-6 py-10">
         {/* Search Header */}
         <div className="mb-10 animate-fade-in">
-          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Discover</p>
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
+            Discover
+          </p>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 tracking-tight">
             Advanced Talent Search
           </h1>
@@ -500,8 +504,6 @@ export default function SearchPage() {
                     </SelectContent>
                   </Select>
                 </div>
-
-
               </div>
 
               <div className="flex justify-end">
@@ -533,7 +535,7 @@ export default function SearchPage() {
                 Avg. rate: $
                 {Math.round(
                   sortedTalent.reduce((sum, t) => sum + t.rate, 0) /
-                    sortedTalent.length
+                    sortedTalent.length,
                 )}
                 /hr
               </span>
@@ -545,10 +547,7 @@ export default function SearchPage() {
         {sortedTalent.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {sortedTalent.map((talent) => (
-              <Card
-                key={talent.id}
-                className="card-hover"
-              >
+              <Card key={talent.id} className="card-hover">
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <Avatar className="h-12 w-12">

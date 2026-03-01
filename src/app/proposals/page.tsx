@@ -133,7 +133,6 @@ export default function ProposalsPage() {
   };
 
   const pendingProposals = proposals.filter((p) => p.status === "pending");
-  const viewedProposals = proposals.filter((p) => p.status === "viewed");
   const acceptedProposals = proposals.filter((p) => p.status === "accepted");
   const declinedProposals = proposals.filter((p) => p.status === "declined");
   const respondedProposals = [...acceptedProposals, ...declinedProposals];

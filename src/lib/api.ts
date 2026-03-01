@@ -2,7 +2,7 @@ export type ApiResponse<T> = { data: T | null; error: string | null };
 
 async function request<T>(
   url: string,
-  options?: RequestInit
+  options?: RequestInit,
 ): Promise<ApiResponse<T>> {
   try {
     const res = await fetch(url, {
@@ -40,13 +40,26 @@ export const api = {
 
 // ─── Typed helpers ────────────────────────────────────────────────────────────
 
-import type { User, TalentProfile, EmployerProfile, Proposal, SavedTalent, Message, Session } from "@/types/models";
+import type {
+  User,
+  TalentProfile,
+  EmployerProfile,
+  Proposal,
+  SavedTalent,
+} from "@/types/models";
 export type { TalentProfile, EmployerProfile, Proposal, SavedTalent, User };
 
 // ─── Named endpoint wrappers ──────────────────────────────────────────────────
 
 type AuthUserResponse = {
-  user: { id: string; email: string; name: string; role: "TALENT" | "EMPLOYER"; createdAt: string; updatedAt: string };
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: "TALENT" | "EMPLOYER";
+    createdAt: string;
+    updatedAt: string;
+  };
 };
 
 export const authApi = {
@@ -54,49 +67,75 @@ export const authApi = {
   login: (email: string, password: string) =>
     api.post<AuthUserResponse>("/api/auth/login", { email, password }),
   register: (name: string, email: string, password: string, role: string) =>
-    api.post<AuthUserResponse>("/api/auth/register", { name, email, password, role }),
+    api.post<AuthUserResponse>("/api/auth/register", {
+      name,
+      email,
+      password,
+      role,
+    }),
   logout: () => api.post<{ message: string }>("/api/auth/logout", {}),
 };
 
 export const talentsApi = {
-  getAll: (params?: { skills?: string; location?: string; minRate?: number; maxRate?: number }) => {
+  getAll: (params?: {
+    skills?: string;
+    location?: string;
+    minRate?: number;
+    maxRate?: number;
+  }) => {
     const qs = params
-      ? "?" + new URLSearchParams(
+      ? "?" +
+        new URLSearchParams(
           Object.entries(params)
             .filter(([, v]) => v !== undefined)
-            .map(([k, v]) => [k, String(v)])
+            .map(([k, v]) => [k, String(v)]),
         ).toString()
       : "";
     return api.get<TalentProfile[]>(`/api/talents${qs}`);
   },
   getFeatured: () => api.get<TalentProfile[]>("/api/talents?limit=3"),
   getById: (id: string) => api.get<TalentProfile>(`/api/talents/${id}`),
-  search: (q: string) => api.get<TalentProfile[]>(`/api/talents/search?q=${encodeURIComponent(q)}`),
-  create: (payload: unknown) => api.post<TalentProfile>("/api/talents", payload),
-  update: (id: string, payload: unknown) => api.put<TalentProfile>(`/api/talents/${id}`, payload),
+  search: (q: string) =>
+    api.get<TalentProfile[]>(`/api/talents/search?q=${encodeURIComponent(q)}`),
+  create: (payload: unknown) =>
+    api.post<TalentProfile>("/api/talents", payload),
+  update: (id: string, payload: unknown) =>
+    api.put<TalentProfile>(`/api/talents/${id}`, payload),
 };
 
 export const companiesApi = {
   getById: (id: string) => api.get<EmployerProfile>(`/api/companies/${id}`),
-  create: (payload: unknown) => api.post<EmployerProfile>("/api/companies", payload),
-  update: (id: string, payload: unknown) => api.put<EmployerProfile>(`/api/companies/${id}`, payload),
+  create: (payload: unknown) =>
+    api.post<EmployerProfile>("/api/companies", payload),
+  update: (id: string, payload: unknown) =>
+    api.put<EmployerProfile>(`/api/companies/${id}`, payload),
 };
 
 export const proposalsApi = {
-  getByTalent: (talentId: string) => api.get<Proposal[]>(`/api/proposals?talentId=${talentId}`),
-  getByEmployer: (employerId: string) => api.get<Proposal[]>(`/api/proposals?employerId=${employerId}`),
+  getByTalent: (talentId: string) =>
+    api.get<Proposal[]>(`/api/proposals?talentId=${talentId}`),
+  getByEmployer: (employerId: string) =>
+    api.get<Proposal[]>(`/api/proposals?employerId=${employerId}`),
   create: (payload: unknown) => api.post<Proposal>("/api/proposals", payload),
-  update: (id: string, payload: unknown) => api.put<Proposal>(`/api/proposals/${id}`, payload),
+  update: (id: string, payload: unknown) =>
+    api.put<Proposal>(`/api/proposals/${id}`, payload),
 };
 
 export const savedTalentsApi = {
-  getByEmployer: (employerId: string) => api.get<SavedTalent[]>(`/api/saved-talents?employerId=${employerId}`),
-  save: (employerId: string, talentId: string) => api.post<SavedTalent>("/api/saved-talents", { employerId, talentId }),
+  getByEmployer: (employerId: string) =>
+    api.get<SavedTalent[]>(`/api/saved-talents?employerId=${employerId}`),
+  save: (employerId: string, talentId: string) =>
+    api.post<SavedTalent>("/api/saved-talents", { employerId, talentId }),
   remove: (id: string) => api.del(`/api/saved-talents/${id}`),
 };
 
 export type MarketInsight = { skill: string; count: number; avgRate: number };
-export type EmployerStats = { sent: number; accepted: number; responseRate: number; avgResponseTime: number | null };
+export type EmployerStats = {
+  sent: number;
+  accepted: number;
+  responseRate: number;
+  avgResponseTime: number | null;
+};
 
 export const analyticsApi = {
   getEmployerStats: (employerId: string) =>
@@ -107,9 +146,12 @@ export const analyticsApi = {
 
 export const recommendationsApi = {
   getForYou: (employerId: string) =>
-    api.get<TalentProfile[]>(`/api/recommendations/for-you?employerId=${employerId}`),
-  getTrending: () =>
-    api.get<TalentProfile[]>(`/api/recommendations/trending`),
+    api.get<TalentProfile[]>(
+      `/api/recommendations/for-you?employerId=${employerId}`,
+    ),
+  getTrending: () => api.get<TalentProfile[]>(`/api/recommendations/trending`),
   getSimilar: (employerId: string) =>
-    api.get<TalentProfile[]>(`/api/recommendations/similar?employerId=${employerId}`),
+    api.get<TalentProfile[]>(
+      `/api/recommendations/similar?employerId=${employerId}`,
+    ),
 };

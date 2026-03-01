@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "./auth";
 
-export async function requireAuth(request: NextRequest) {
+export async function requireAuth(_request: NextRequest) {
   const user = await verifySession();
 
   if (!user) {
@@ -12,8 +12,8 @@ export async function requireAuth(request: NextRequest) {
 }
 
 export async function requireRole(
-  request: NextRequest,
-  allowedRoles: string[]
+  _request: NextRequest,
+  allowedRoles: string[],
 ) {
   const user = await verifySession();
 
@@ -24,7 +24,7 @@ export async function requireRole(
   if (!allowedRoles.includes(user.role)) {
     return NextResponse.json(
       { error: "Forbidden: Insufficient permissions" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 

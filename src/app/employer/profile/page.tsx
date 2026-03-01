@@ -5,7 +5,7 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
-import { companiesApi, type EmployerProfile } from "@/lib/api";
+import { companiesApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,

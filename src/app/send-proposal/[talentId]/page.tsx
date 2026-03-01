@@ -11,7 +11,6 @@ import {
   companiesApi,
   proposalsApi,
   type TalentProfile,
-  type EmployerProfile,
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -48,8 +47,6 @@ export default function SendProposalPage({
   const router = useRouter();
   const { user } = useAuth();
   const [talent, setTalent] = useState<TalentProfile | null>(null);
-  const [employerProfile, setEmployerProfile] =
-    useState<EmployerProfile | null>(null);
   const [formData, setFormData] = useState({
     position: "",
     company: "",
@@ -76,7 +73,6 @@ export default function SendProposalPage({
     // Fetch employer profile to pre-fill company name
     companiesApi.getById(user.id).then(({ data }) => {
       if (data) {
-        setEmployerProfile(data);
         setFormData((prev) => ({
           ...prev,
           company: data.companyName,
