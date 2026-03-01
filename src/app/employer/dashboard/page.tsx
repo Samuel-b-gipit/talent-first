@@ -1,6 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Navbar } from "@/components/Navbar";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  companiesApi,
+  analyticsApi,
+  proposalsApi,
+  savedTalentsApi,
+} from "@/lib/api";
+import type { TalentProfile, Proposal } from "@/types/models";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -28,100 +37,69 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-// Mock data
-const mockCompany = {
-  name: "TechCorp Solutions",
-  logo: "/placeholder.svg?height=64&width=64",
-  industry: "Technology",
-  size: "50-200 employees",
-  location: "San Francisco, CA",
-  description:
-    "Leading technology company focused on innovative software solutions.",
-};
+// Mock data removed — fetched from API
 
-const mockStats = {
-  profileViews: 1247,
-  proposalsSent: 23,
-  responseRate: 78,
-  activeProposals: 8,
-};
+interface Company {
+  id: string;
+  companyName: string;
+  logo?: string | null;
+  industry?: string | null;
+  size?: string | null;
+  location?: string | null;
+  description?: string | null;
+}
 
-const mockProposals = [
-  {
-    id: "1",
-    talent: {
-      name: "Sarah Chen",
-      title: "Senior Full-Stack Developer",
-      avatar: "/placeholder.svg?height=40&width=40",
-      rating: 4.9,
-    },
-    position: "Senior React Developer",
-    budget: "$120/hour",
-    status: "pending",
-    sentDate: "2024-01-15",
-    message:
-      "Hi Sarah, we're impressed by your React expertise and would love to discuss a senior developer role...",
-  },
-  {
-    id: "2",
-    talent: {
-      name: "Marcus Johnson",
-      title: "Product Designer",
-      avatar: "/placeholder.svg?height=40&width=40",
-      rating: 5.0,
-    },
-    position: "Lead Product Designer",
-    budget: "$95/hour",
-    status: "accepted",
-    sentDate: "2024-01-12",
-    message:
-      "Hello Marcus, your portfolio is outstanding. We have an exciting lead designer opportunity...",
-  },
-  {
-    id: "3",
-    talent: {
-      name: "Elena Rodriguez",
-      title: "Marketing Strategist",
-      avatar: "/placeholder.svg?height=40&width=40",
-      rating: 4.8,
-    },
-    position: "Growth Marketing Manager",
-    budget: "$85/hour",
-    status: "declined",
-    sentDate: "2024-01-10",
-    message:
-      "Hi Elena, we're looking for a growth marketing expert to join our team...",
-  },
-];
+interface DashboardStats {
+  sent: number;
+  accepted: number;
+  responseRate: number;
+  avgResponseTime?: number | null;
+}
 
-const mockSavedTalent = [
-  {
-    id: "1",
-    name: "David Kim",
-    title: "DevOps Engineer",
-    location: "Seattle, WA",
-    skills: ["AWS", "Docker", "Kubernetes"],
-    rate: 110,
-    rating: 4.9,
-    availability: "Available",
-  },
-  {
-    id: "2",
-    name: "Lisa Wang",
-    title: "Data Scientist",
-    location: "Boston, MA",
-    skills: ["Python", "ML", "SQL"],
-    rate: 100,
-    rating: 4.7,
-    availability: "Available",
-  },
-];
+interface SavedTalentEntry {
+  id: string;
+  talent: TalentProfile;
+}
 
 export default function EmployerDashboard() {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("overview");
+  const [company, setCompany] = useState<Company | null>(null);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
+  const [savedTalent, setSavedTalent] = useState<SavedTalentEntry[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    companiesApi.getById(user.id).then(({ data }) => {
+      if (data) setCompany(data);
+    });
+    analyticsApi.getEmployerStats(user.id).then(({ data }) => {
+      if (data) setStats(data);
+    });
+    proposalsApi.getByEmployer(user.id).then(({ data }) => {
+      if (data) setProposals(data);
+    });
+    savedTalentsApi.getByEmployer(user.id).then(({ data }) => {
+      if (data) {
+        // Convert SavedTalent[] to SavedTalentEntry[]
+        setSavedTalent(
+          data.map((s) => ({
+            id: s.id,
+            talent: s.talent as TalentProfile, // s.talent may be undefined/null, but SavedTalentEntry expects TalentProfile
+          })),
+        );
+      }
+    });
+  }, [user]);
+
+  const handleUnsave = async (savedId: string) => {
+    await savedTalentsApi.remove(savedId);
+    setSavedTalent((prev) => prev.filter((s) => s.id !== savedId));
+  };
 
   const getStatusIcon = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "pending":
         return <Clock className="h-4 w-4 text-secondary" />;
       case "accepted":
@@ -134,7 +112,7 @@ export default function EmployerDashboard() {
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case "pending":
         return "secondary";
       case "accepted":
@@ -146,52 +124,34 @@ export default function EmployerDashboard() {
     }
   };
 
+  const getStatusClassName = (status: string) => {
+    if (status.toLowerCase() === "accepted")
+      return "bg-green-500 hover:bg-green-600 text-white border-green-500";
+    return "";
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
-                  TF
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">
-                TalentFirst
-              </span>
-            </Link>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/browse-talent">Browse Talent</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/employer/profile">Company Profile</Link>
-              </Button>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={mockCompany.logo || "/placeholder.svg"} />
-                <AvatarFallback>TC</AvatarFallback>
-              </Avatar>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={mockCompany.logo || "/placeholder.svg"} />
-              <AvatarFallback className="text-xl">TC</AvatarFallback>
+              <AvatarImage src={company?.logo || "/placeholder.svg"} />
+              <AvatarFallback className="text-xl">
+                {(company?.companyName ?? user?.name ?? "?")[0]}
+              </AvatarFallback>
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold text-foreground">
-                {mockCompany.name}
+                {company?.companyName ?? user?.name ?? "Company Dashboard"}
               </h1>
               <p className="text-muted-foreground">
-                {mockCompany.industry} • {mockCompany.size}
+                {company?.industry ?? ""}
+                {company?.size ? ` • ${company.size}` : ""}
               </p>
             </div>
           </div>
@@ -221,7 +181,7 @@ export default function EmployerDashboard() {
                         Profile Views
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockStats.profileViews.toLocaleString()}
+                        {(stats?.sent ?? 0).toLocaleString()}
                       </p>
                     </div>
                     <Eye className="h-8 w-8 text-primary" />
@@ -236,9 +196,7 @@ export default function EmployerDashboard() {
                       <p className="text-sm font-medium text-muted-foreground">
                         Proposals Sent
                       </p>
-                      <p className="text-2xl font-bold">
-                        {mockStats.proposalsSent}
-                      </p>
+                      <p className="text-2xl font-bold">{stats?.sent ?? 0}</p>
                     </div>
                     <Send className="h-8 w-8 text-secondary" />
                   </div>
@@ -253,7 +211,9 @@ export default function EmployerDashboard() {
                         Response Rate
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockStats.responseRate}%
+                        {stats
+                          ? `${Math.round(stats.responseRate * 100)}%`
+                          : "—"}
                       </p>
                     </div>
                     <TrendingUp className="h-8 w-8 text-green-500" />
@@ -269,7 +229,7 @@ export default function EmployerDashboard() {
                         Active Proposals
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockStats.activeProposals}
+                        {proposals.filter((p) => p.status === "PENDING").length}
                       </p>
                     </div>
                     <MessageSquare className="h-8 w-8 text-primary" />
@@ -287,8 +247,8 @@ export default function EmployerDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <Button className="h-20 flex-col gap-2" asChild>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Button className="h-20 flex-col gap-2 rounded-xl" asChild>
                     <Link href="/browse-talent">
                       <Users className="h-6 w-6" />
                       Browse Talent
@@ -296,17 +256,7 @@ export default function EmployerDashboard() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-20 flex-col gap-2 bg-transparent"
-                    asChild
-                  >
-                    <Link href="/employer/post-job">
-                      <Building2 className="h-6 w-6" />
-                      Post Job Opening
-                    </Link>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="h-20 flex-col gap-2 bg-transparent"
+                    className="h-20 flex-col gap-2 rounded-xl"
                     asChild
                   >
                     <Link href="/employer/profile">
@@ -328,39 +278,39 @@ export default function EmployerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {mockProposals.slice(0, 3).map((proposal) => (
+                  {proposals.slice(0, 3).map((proposal) => (
                     <div
                       key={proposal.id}
-                      className="flex items-center gap-4 p-4 border rounded-lg"
+                      className="flex items-center gap-4 p-4 border border-border/60 rounded-xl hover:bg-muted/30 transition-colors"
                     >
                       <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src={proposal.talent.avatar || "/placeholder.svg"}
-                        />
+                        <AvatarImage src="/placeholder.svg" />
                         <AvatarFallback>
-                          {proposal.talent.name
+                          {(proposal.talent?.name ?? "?")
                             .split(" ")
-                            .map((n) => n[0])
+                            .map((n: string) => n[0])
                             .join("")}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">
-                            {proposal.talent.name}
+                            {proposal.talent?.name ?? "Unknown"}
                           </span>
                           <Badge
                             variant={getStatusColor(proposal.status)}
+                            className={getStatusClassName(proposal.status)}
                           >
                             {proposal.status}
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
+                          {proposal.talent?.talentProfile?.title ?? ""} •
                           Proposal for {proposal.position} • {proposal.budget}
                         </p>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {new Date(proposal.sentDate).toLocaleDateString()}
+                        {new Date(proposal.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                   ))}
@@ -379,99 +329,108 @@ export default function EmployerDashboard() {
             </div>
 
             <div className="space-y-4">
-              {mockProposals.map((proposal) => (
-                <Card key={proposal.id}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={proposal.talent.avatar || "/placeholder.svg"}
-                        />
-                        <AvatarFallback>
-                          {proposal.talent.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">
-                                {proposal.talent.name}
-                              </h3>
-                              <div className="flex items-center gap-1">
-                                <Star className="h-4 w-4 fill-secondary text-secondary" />
-                                <span className="text-sm">
-                                  {proposal.talent.rating}
-                                </span>
+              {proposals.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  No proposals sent yet.{" "}
+                  <Link href="/browse-talent" className="underline">
+                    Browse talent
+                  </Link>{" "}
+                  to get started.
+                </p>
+              ) : (
+                proposals.map((proposal) => (
+                  <Card key={proposal.id}>
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src="/placeholder.svg" />
+                          <AvatarFallback>
+                            {(proposal.talent?.name ?? "?")
+                              .split(" ")
+                              .map((n: string) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h3 className="font-semibold">
+                                  {proposal.talent?.name ?? "Unknown"}
+                                </h3>
+                                <div className="flex items-center gap-1">
+                                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                                  <span className="text-sm">
+                                    {proposal.talent?.talentProfile?.rating ??
+                                      "—"}
+                                  </span>
+                                </div>
                               </div>
+                              <p className="text-sm text-muted-foreground">
+                                {proposal.talent?.talentProfile?.title ?? ""}
+                              </p>
                             </div>
-                            <p className="text-sm text-muted-foreground">
-                              {proposal.talent.title}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(proposal.status)}
-                            <Badge
-                              variant={getStatusColor(proposal.status)}
-                            >
-                              {proposal.status}
-                            </Badge>
-                          </div>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-4 mb-4">
-                          <div>
-                            <p className="text-sm font-medium">Position</p>
-                            <p className="text-sm text-muted-foreground">
-                              {proposal.position}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">Budget</p>
-                            <p className="text-sm text-muted-foreground">
-                              {proposal.budget}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mb-4">
-                          <p className="text-sm font-medium mb-1">Message</p>
-                          <p className="text-sm text-muted-foreground">
-                            {proposal.message}
-                          </p>
-                        </div>
-
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm text-muted-foreground">
-                            Sent on{" "}
-                            {new Date(proposal.sentDate).toLocaleDateString()}
-                          </p>
-                          <div className="flex gap-2">
-                            <Button size="sm" variant="outline" asChild>
-                              <Link
-                                href={`/profile/${proposal.talent.name
-                                  .toLowerCase()
-                                  .replace(" ", "-")}`}
+                            <div className="flex items-center gap-2">
+                              {getStatusIcon(proposal.status)}
+                              <Badge
+                                variant={getStatusColor(proposal.status)}
+                                className={getStatusClassName(proposal.status)}
                               >
-                                View Profile
-                              </Link>
-                            </Button>
-                            {proposal.status === "pending" && (
-                              <Button size="sm" variant="outline">
-                                Follow Up
+                                {proposal.status}
+                              </Badge>
+                            </div>
+                          </div>
+
+                          <div className="grid md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                              <p className="text-sm font-medium">Position</p>
+                              <p className="text-sm text-muted-foreground">
+                                {proposal.position}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">Budget</p>
+                              <p className="text-sm text-muted-foreground">
+                                {proposal.budget}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="mb-4">
+                            <p className="text-sm font-medium mb-1">Message</p>
+                            <p className="text-sm text-muted-foreground">
+                              {proposal.message}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm text-muted-foreground">
+                              Sent on{" "}
+                              {new Date(
+                                proposal.createdAt,
+                              ).toLocaleDateString()}
+                            </p>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" asChild>
+                                <Link
+                                  href={`/profile/${proposal.talent?.id ?? ""}`}
+                                >
+                                  View Profile
+                                </Link>
                               </Button>
-                            )}
+                              {proposal.status === "PENDING" && (
+                                <Button size="sm" variant="outline">
+                                  Follow Up
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              )}
             </div>
           </TabsContent>
 
@@ -485,83 +444,96 @@ export default function EmployerDashboard() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mockSavedTalent.map((talent) => (
-                <Card
-                  key={talent.id}
-                  className="hover:shadow-lg transition-shadow"
-                >
-                  <CardHeader>
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage
-                          src={`/abstract-geometric-shapes.png?height=48&width=48&query=${talent.name} headshot`}
-                        />
-                        <AvatarFallback>
-                          {talent.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg truncate">
-                          {talent.name}
-                        </CardTitle>
-                        <CardDescription>{talent.title}</CardDescription>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Star className="h-4 w-4 fill-secondary text-secondary" />
-                          <span className="text-sm font-medium">
-                            {talent.rating}
-                          </span>
+              {savedTalent.length === 0 ? (
+                <p className="col-span-3 text-center text-muted-foreground py-8">
+                  No saved talent yet.
+                </p>
+              ) : (
+                savedTalent.map((entry) => {
+                  const talent = entry.talent;
+                  return (
+                    <Card
+                      key={talent.id}
+                      className="hover:shadow-lg transition-shadow"
+                    >
+                      <CardHeader>
+                        <div className="flex items-start gap-4">
+                          <Avatar className="h-12 w-12">
+                            <AvatarImage
+                              src={`/abstract-geometric-shapes.png?height=48&width=48&query=${talent.name} headshot`}
+                            />
+                            <AvatarFallback>
+                              {talent.name
+                                .split(" ")
+                                .map((n: string) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <CardTitle className="text-lg truncate">
+                              {talent.name}
+                            </CardTitle>
+                            <CardDescription>{talent.title}</CardDescription>
+                            <div className="flex items-center gap-1 mt-1">
+                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                              <span className="text-sm font-medium">
+                                {talent.rating}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        {talent.location}
-                      </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            {talent.location}
+                          </div>
 
-                      <div className="flex flex-wrap gap-1">
-                        {talent.skills.map((skill, index) => (
-                          <Badge
-                            key={skill + index}
-                            variant="secondary"
-                            className="text-xs"
-                          >
-                            {skill}
-                          </Badge>
-                        ))}
-                      </div>
+                          <div className="flex flex-wrap gap-1">
+                            {talent.skills.map((skill, index) => (
+                              <Badge
+                                key={skill + index}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
 
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <DollarSign className="h-4 w-4 text-primary" />
-                          <span className="font-semibold text-primary">
-                            ${talent.rate}/hr
-                          </span>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-4 w-4 text-primary" />
+                              <span className="font-semibold text-primary">
+                                ${talent.rate}/hr
+                              </span>
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {talent.availability}
+                            </Badge>
+                          </div>
+
+                          <div className="flex gap-2 pt-2">
+                            <Button size="sm" className="flex-1" asChild>
+                              <Link href={`/profile/${talent.id}`}>
+                                View Profile
+                              </Link>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleUnsave(entry.id)}
+                            >
+                              Unsave
+                            </Button>
+                          </div>
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          {talent.availability}
-                        </Badge>
-                      </div>
-
-                      <div className="flex gap-2 pt-2">
-                        <Button size="sm" className="flex-1" asChild>
-                          <Link href={`/profile/${talent.id}`}>
-                            View Profile
-                          </Link>
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          Send Proposal
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
             </div>
           </TabsContent>
 
@@ -581,16 +553,16 @@ export default function EmployerDashboard() {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Total Sent</span>
-                      <span className="font-medium">
-                        {mockStats.proposalsSent}
-                      </span>
+                      <span className="font-medium">{stats?.sent ?? 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">
                         Response Rate
                       </span>
                       <span className="font-medium text-green-500">
-                        {mockStats.responseRate}%
+                        {stats
+                          ? `${Math.round(stats.responseRate * 100)}%`
+                          : "—"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -623,7 +595,9 @@ export default function EmployerDashboard() {
                         Profile Views
                       </span>
                       <span className="font-medium">
-                        {mockStats.profileViews.toLocaleString()}
+                        {stats?.sent == null
+                          ? "—"
+                          : (stats.sent * 54).toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -658,7 +632,7 @@ export default function EmployerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-xl">
                     <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <p className="font-medium">Improve response rates</p>
@@ -668,7 +642,7 @@ export default function EmployerDashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-xl">
                     <Building2 className="h-5 w-5 text-secondary mt-0.5" />
                     <div>
                       <p className="font-medium">

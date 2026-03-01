@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// User Model - Common fields for both talent and employers
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  talentProfile     TalentProfile?
+  employerProfile   EmployerProfile?
+  sentProposals     Proposal[]       @relation("EmployerProposals")
+  receivedProposals Proposal[]       @relation("TalentProposals")
+  sentMessages      Message[]        @relation("SentMessages")
+  receivedMessages  Message[]        @relation("ReceivedMessages")
+  savedTalents      SavedTalent[]    @relation("SavedByEmployer")
+  sessions          Session[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  TALENT
+  EMPLOYER
+}
+
+// Talent Profile Model
+model TalentProfile {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  name        String
+  title       String
+  location    String
+  skills      String[]
+  experience  String
+  rate        Float
+  availability String
+  bio         String   @db.Text
+  avatarUrl   String?
+  portfolio   String?
+  linkedin    String?
+  github      String?
+  website     String?
+  openToRemote Boolean @default(true)
+  openToContract Boolean @default(true)
+  rating      Float?   @default(0)
+  reviewCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  savedBy  SavedTalent[]
+
+  @@map("talent_profiles")
+}
+
+// Employer/Company Profile Model
+model EmployerProfile {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  companyName  String
+  industry     String
+  size         String
+  logo         String?
+  website      String?
+  location     String
+  description  String   @db.Text
+  culture      String?  @db.Text
+  benefits     String[]
+  techStack    String[]
+  remotePolicy String
+  isHiring     Boolean  @default(true)
+  foundedYear  String?
+  linkedin     String?
+  twitter      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("employer_profiles")
+}
+
+// Proposal Model
+model Proposal {
+  id           String         @id @default(cuid())
+  employerId   String
+  talentId     String
+  position     String
+  budget       String
+  budgetType   String
+  location     String
+  remote       String
+  duration     String?
+  startDate    String?
+  status       ProposalStatus @default(PENDING)
+  message      String         @db.Text
+  requirements String?        @db.Text
+  benefits     String?        @db.Text
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  // Relations
+  employer User      @relation("EmployerProposals", fields: [employerId], references: [id], onDelete: Cascade)
+  talent   User      @relation("TalentProposals", fields: [talentId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@map("proposals")
+}
+
+enum ProposalStatus {
+  PENDING
+  VIEWED
+  ACCEPTED
+  DECLINED
+}
+
+// SavedTalent Model - For employers to bookmark talents
+model SavedTalent {
+  id         String   @id @default(cuid())
+  employerId String
+  talentId   String
+  notes      String?  @db.Text
+  savedDate  DateTime @default(now())
+
+  // Relations
+  employer User          @relation("SavedByEmployer", fields: [employerId], references: [id], onDelete: Cascade)
+  talent   TalentProfile @relation(fields: [talentId], references: [id], onDelete: Cascade)
+
+  @@unique([employerId, talentId])
+  @@map("saved_talents")
+}
+
+// Message Model (for future messaging feature)
+model Message {
+  id         String   @id @default(cuid())
+  proposalId String
+  senderId   String
+  receiverId String
+  content    String   @db.Text
+  readAt     DateTime?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  sender   User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
+}
+
+// Session Model
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}

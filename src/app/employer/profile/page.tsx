@@ -2,7 +2,10 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Navbar } from "@/components/Navbar";
+import { useAuth } from "@/contexts/AuthContext";
+import { companiesApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -24,41 +27,99 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { Building2, MapPin, Globe, Plus, X } from "lucide-react";
+import { Building2, MapPin, Globe, Plus, X, Camera } from "lucide-react";
 import Link from "next/link";
 
 export default function CompanyProfilePage() {
+  const { user } = useAuth();
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    companyName: "TechCorp Solutions",
+    companyName: "",
     industry: "technology",
-    companySize: "50-200",
-    location: "San Francisco, CA",
-    website: "https://techcorp.com",
-    description:
-      "Leading technology company focused on innovative software solutions that help businesses scale and grow.",
-    culture:
-      "We believe in work-life balance, continuous learning, and building products that make a real impact.",
+    companySize: "51-200",
+    location: "",
+    website: "",
+    description: "",
+    culture: "",
     benefits: [] as string[],
     techStack: [] as string[],
     remotePolicy: "hybrid",
     isHiring: true,
-    foundedYear: "2018",
-    linkedin: "https://linkedin.com/company/techcorp",
-    twitter: "https://twitter.com/techcorp",
+    foundedYear: "",
+    linkedin: "",
+    twitter: "",
+    logo: "",
   });
 
   const [newBenefit, setNewBenefit] = useState("");
   const [newTech, setNewTech] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [logoPreview, setLogoPreview] = useState("");
+
+  // Load existing profile
+  useEffect(() => {
+    if (!user) return;
+    companiesApi.getById(user.id).then(({ data }) => {
+      if (data) {
+        setProfileId(data.id);
+        setFormData({
+          companyName: data.companyName,
+          industry: data.industry,
+          companySize: data.size,
+          location: data.location,
+          website: data.website ?? "",
+          description: data.description,
+          culture: data.culture ?? "",
+          benefits: data.benefits,
+          techStack: data.techStack,
+          remotePolicy: data.remotePolicy,
+          isHiring: data.isHiring,
+          foundedYear: data.foundedYear ?? "",
+          linkedin: data.linkedin ?? "",
+          twitter: data.twitter ?? "",
+          logo: data.logo ?? "",
+        });
+      }
+      setIsFetching(false);
+    });
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError("");
+    setSuccess("");
 
-    // Simulate profile update
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const payload = {
+      companyName: formData.companyName,
+      industry: formData.industry || undefined,
+      size: formData.companySize,
+      location: formData.location,
+      website: formData.website || undefined,
+      description: formData.description,
+      culture: formData.culture || undefined,
+      benefits: formData.benefits,
+      techStack: formData.techStack,
+      remotePolicy: formData.remotePolicy,
+      isHiring: formData.isHiring,
+      foundedYear: formData.foundedYear || undefined,
+      linkedin: formData.linkedin || undefined,
+      twitter: formData.twitter || undefined,
+      logo: formData.logo || undefined,
+    };
 
-    console.log("Company profile updated:", formData);
+    const { error: apiError } = profileId
+      ? await companiesApi.update(profileId, payload)
+      : await companiesApi.create(payload);
+
+    if (apiError) {
+      setError(apiError);
+    } else {
+      setSuccess("Company profile saved successfully!");
+    }
     setIsLoading(false);
   };
 
@@ -96,6 +157,21 @@ export default function CompanyProfilePage() {
     }));
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoPreview(URL.createObjectURL(file));
+    const form = new FormData();
+    form.append("file", file);
+    const res = await fetch("/api/upload", {
+      method: "POST",
+      body: form,
+      credentials: "include",
+    });
+    const json = await res.json();
+    if (json.url) setFormData((prev) => ({ ...prev, logo: json.url }));
+  };
+
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -103,34 +179,14 @@ export default function CompanyProfilePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
-                  TF
-                </span>
-              </div>
-              <span className="text-xl font-bold text-foreground">
-                TalentFirst
-              </span>
-            </Link>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/employer/dashboard">Dashboard</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/browse-talent">Browse Talent</Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+      <div className="container mx-auto px-6 py-10 max-w-4xl">
+        <div className="mb-10 animate-fade-in">
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
+            Company
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
             Company Profile
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -151,10 +207,34 @@ export default function CompanyProfilePage() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-4 mb-4">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src="/generic-company-logo.png" />
-                  <AvatarFallback className="text-2xl">TC</AvatarFallback>
+                  <AvatarImage src={logoPreview || formData.logo || ""} />
+                  <AvatarFallback className="text-2xl">
+                    {formData.companyName?.[0]?.toUpperCase() || "C"}
+                  </AvatarFallback>
                 </Avatar>
-                <Button variant="outline">Upload Logo</Button>
+                <div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="flex items-center gap-2"
+                    onClick={() =>
+                      document.getElementById("logo-upload")?.click()
+                    }
+                  >
+                    <Camera className="h-4 w-4" />
+                    Upload Logo
+                  </Button>
+                  <input
+                    id="logo-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleLogoUpload}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    JPG, PNG or WebP. Max 5MB.
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -480,15 +560,31 @@ export default function CompanyProfilePage() {
             </CardContent>
           </Card>
 
+          {/* Error / Success */}
+          {error && (
+            <div className="rounded-md bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="rounded-md bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+              {success}
+            </div>
+          )}
+
           {/* Submit */}
           <div className="flex gap-4">
             <Button
               type="submit"
               size="lg"
-              disabled={isLoading}
+              disabled={isLoading || isFetching}
               className="flex-1"
             >
-              {isLoading ? "Updating Profile..." : "Update Profile"}
+              {isLoading
+                ? "Saving..."
+                : profileId
+                  ? "Update Profile"
+                  : "Create Profile"}
             </Button>
             <Button type="button" variant="outline" size="lg" asChild>
               <Link href="/employer/dashboard">Cancel</Link>
