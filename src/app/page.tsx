@@ -24,10 +24,17 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 export default async function HomePage() {
-  const featuredTalent = await prisma.talentProfile.findMany({
-    take: 3,
-    orderBy: { rating: "desc" },
-  });
+  let featuredTalent: Awaited<
+    ReturnType<typeof prisma.talentProfile.findMany>
+  > = [];
+  try {
+    featuredTalent = await prisma.talentProfile.findMany({
+      take: 3,
+      orderBy: { rating: "desc" },
+    });
+  } catch (err) {
+    console.error("Failed to load featured talent:", err);
+  }
 
   return (
     <div className="min-h-screen bg-background">
