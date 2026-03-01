@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast, Toaster } from "sonner";
 import {
   recommendationsApi,
   analyticsApi,
@@ -70,9 +71,19 @@ export default function RecommendationsPage() {
     });
   }, [user]);
 
-  const saveTalent = async (talentProfileId: string) => {
+  const saveTalent = async (talentProfileId: string, talentName?: string) => {
     setSavedTalentIds((prev) => [...prev, talentProfileId]);
-    await savedTalentsApi.save(user!.id, talentProfileId);
+    const { error } = await savedTalentsApi.save(user!.id, talentProfileId);
+    if (error) {
+      setSavedTalentIds((prev) => prev.filter((id) => id !== talentProfileId));
+      if (error.includes("already saved")) {
+        toast.info("Already saved", { description: `${talentName ?? "This talent"} is already in your saved list.` });
+      } else {
+        toast.error("Failed to save talent", { description: error });
+      }
+    } else {
+      toast.success("Talent saved!", { description: `${talentName ?? "Talent"} has been added to your saved list.` });
+    }
   };
 
   // Normalise insight count to a 0–100 progress value
@@ -80,6 +91,7 @@ export default function RecommendationsPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Toaster position="top-right" richColors />
       {/* Header */}
       <Navbar />
 
@@ -233,7 +245,7 @@ export default function RecommendationsPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => saveTalent(talent.id)}
+                                  onClick={() => saveTalent(talent.id, talent.name)}
                                   disabled={savedTalentIds.includes(talent.id)}
                                 >
                                   <BookmarkPlus className="h-4 w-4" />

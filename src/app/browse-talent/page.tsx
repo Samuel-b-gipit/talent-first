@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import { talentsApi, type TalentProfile } from "@/lib/api";
+import { talentsApi, savedTalentsApi, type TalentProfile } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast, Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,18 +23,28 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Filter, MapPin, Clock, Star, DollarSign } from "lucide-react";
+import {
+  Search,
+  Filter,
+  MapPin,
+  Clock,
+  Star,
+  DollarSign,
+  BookmarkPlus,
+} from "lucide-react";
 import Link from "next/link";
 
 // Mock data removed — fetched from API
 
 export default function BrowseTalentPage() {
+  const { user } = useAuth();
   const [talents, setTalents] = useState<TalentProfile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSkill, setSelectedSkill] = useState("allSkills");
   const [selectedLocation, setSelectedLocation] = useState("allLocations");
   const [selectedExperience, setSelectedExperience] = useState("allExperience");
+  const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
 
   useEffect(() => {
     talentsApi.getAll().then(({ data }) => {
@@ -40,6 +52,31 @@ export default function BrowseTalentPage() {
       setIsLoading(false);
     });
   }, []);
+
+  const handleSaveTalent = async (talentId: string, talentName: string) => {
+    if (!user) {
+      toast.error("Sign in required", {
+        description: "Please sign in as an employer to save talents.",
+      });
+      return;
+    }
+    setSavedTalentIds((prev) => [...prev, talentId]);
+    const { error } = await savedTalentsApi.save(user.id, talentId);
+    if (error) {
+      setSavedTalentIds((prev) => prev.filter((id) => id !== talentId));
+      if (error.includes("already saved")) {
+        toast.info("Already saved", {
+          description: `${talentName} is already in your saved list.`,
+        });
+      } else {
+        toast.error("Failed to save talent", { description: error });
+      }
+    } else {
+      toast.success("Talent saved!", {
+        description: `${talentName} has been added to your saved list.`,
+      });
+    }
+  };
 
   const filteredTalent = talents.filter((talent) => {
     const matchesSearch =
@@ -69,6 +106,7 @@ export default function BrowseTalentPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Toaster position="top-right" richColors />
       {/* Header */}
       <Navbar />
 
@@ -296,6 +334,15 @@ export default function BrowseTalentPage() {
                         <Link href={`/send-proposal/${talent.id}`}>
                           Send Proposal
                         </Link>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleSaveTalent(talent.id, talent.name)}
+                        disabled={savedTalentIds.includes(talent.id)}
+                        title="Save talent"
+                      >
+                        <BookmarkPlus className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>

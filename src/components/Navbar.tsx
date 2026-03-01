@@ -1,5 +1,6 @@
-"use client";
+'use client'
 
+import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -15,7 +16,20 @@ import { LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function Navbar() {
-  const { user, isLoading, logout } = useAuth();
+  const { user, companyName, isLoading, logout } = useAuth();
+
+  // Determine logo text
+  let logoText = "TF";
+  if (user?.role === "EMPLOYER") logoText = "Employer";
+  else if (user?.role === "TALENT") logoText = "Talent";
+
+  // Determine display name
+  let displayName = "TalentFirst";
+  if (user?.role === "TALENT" && user?.name) {
+    displayName = user.name;
+  } else if (user?.role === "EMPLOYER" && companyName) {
+    displayName = companyName;
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 glass">
@@ -23,13 +37,13 @@ export function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="h-9 w-9 bg-primary rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(79,70,229,0.25)] group-hover:shadow-[0_2px_12px_rgba(79,70,229,0.35)] transition-shadow duration-200">
-              <span className="text-primary-foreground font-bold text-sm">
-                TF
+            <div className="min-w-[2.25rem] px-3 h-9 bg-primary rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(79,70,229,0.25)] group-hover:shadow-[0_2px_12px_rgba(79,70,229,0.35)] transition-shadow duration-200">
+              <span className="text-primary-foreground font-bold text-sm whitespace-nowrap">
+                {logoText}
               </span>
             </div>
-            <span className="text-xl font-bold text-foreground tracking-tight">
-              TalentFirst
+            <span className="text-xl font-bold text-foreground tracking-tight whitespace-nowrap">
+              {displayName}
             </span>
           </Link>
 

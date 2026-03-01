@@ -4,11 +4,12 @@ import React, {
   createContext,
   useContext,
   useEffect,
+  useMemo,
   useState,
   useCallback,
 } from "react";
 import { useRouter } from "next/navigation";
-import { authApi } from "@/lib/api";
+import { authApi, companiesApi } from "@/lib/api";
 
 export type UserRole = "TALENT" | "EMPLOYER";
 
@@ -24,6 +25,7 @@ export interface AuthUser {
 
 interface AuthContextValue {
   user: AuthUser | null;
+  companyName: string;
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (
@@ -42,17 +44,32 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({
+  children,
+}: {
+  readonly children: React.ReactNode;
+}) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [companyName, setCompanyName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   const refreshUser = useCallback(async () => {
     try {
       const { data } = await authApi.me();
-      setUser(data?.user ?? null);
+      const fetchedUser = data?.user ?? null;
+      setUser(fetchedUser);
+      if (fetchedUser?.role === "EMPLOYER") {
+        const { data: companyData } = await companiesApi.getById(
+          fetchedUser.id,
+        );
+        setCompanyName(companyData?.companyName ?? "");
+      } else {
+        setCompanyName("");
+      }
     } catch {
       setUser(null);
+      setCompanyName("");
     }
   }, []);
 
@@ -69,6 +86,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await authApi.login(email, password);
       if (error || !data) return { error: error ?? "Login failed" };
       setUser(data.user);
+      if (data.user.role === "EMPLOYER") {
+        const { data: companyData } = await companiesApi.getById(data.user.id);
+        setCompanyName(companyData?.companyName ?? "");
+      } else {
+        setCompanyName("");
+      }
       return { user: data.user };
     },
     [],
@@ -97,23 +120,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     await authApi.logout();
     setUser(null);
+    setCompanyName("");
     router.push("/login");
   }, [router]);
 
+  const contextValue = useMemo(
+    () => ({
+      user,
+      companyName,
+      isLoading,
+      isAuthenticated: !!user,
+      login,
+      register,
+      logout,
+      refreshUser,
+    }),
+    [user, companyName, isLoading, login, register, logout, refreshUser],
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isAuthenticated: !!user,
-        login,
-        register,
-        logout,
-        refreshUser,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 }
 
