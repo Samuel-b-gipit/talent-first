@@ -61,11 +61,11 @@ export default function SignupPage() {
       {/* Nav Header */}
       <Navbar />
 
-      <div className="flex items-center justify-center p-4 py-16">
-        <div className="w-full max-w-md">
+      <div className="flex items-center justify-center p-4 py-20 min-h-[calc(100vh-57px)]">
+        <div className="w-full max-w-md animate-fade-in-up">
           {/* Header */}
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold text-foreground mb-2">
+          <div className="text-center mb-10">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Create your account
             </h1>
             <p className="text-muted-foreground">
@@ -73,7 +73,7 @@ export default function SignupPage() {
             </p>
           </div>
 
-          <Card>
+          <Card className="shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
             <CardHeader>
               <CardTitle>Sign Up</CardTitle>
               <CardDescription>

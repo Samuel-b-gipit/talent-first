@@ -45,7 +45,9 @@ export default function RecommendationsPage() {
   const [trending, setTrending] = useState<TalentProfile[]>([]);
   const [similar, setSimilar] = useState<TalentProfile[]>([]);
   const [marketInsights, setMarketInsights] = useState<MarketInsight[]>([]);
-  const [employerStats, setEmployerStats] = useState<EmployerStats | null>(null);
+  const [employerStats, setEmployerStats] = useState<EmployerStats | null>(
+    null,
+  );
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -81,15 +83,18 @@ export default function RecommendationsPage() {
       {/* Header */}
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-10">
         {/* Page Header */}
-        <div className="mb-8">
+        <div className="mb-10 animate-fade-in">
           <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-6 w-6 text-primary" />
-            <h1 className="text-3xl font-bold text-foreground">
-              Smart Recommendations
-            </h1>
+            <Sparkles className="h-5 w-5 text-primary" />
+            <p className="text-sm font-semibold text-primary uppercase tracking-wider">
+              AI-Powered
+            </p>
           </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+            Smart Recommendations
+          </h1>
           <p className="text-muted-foreground text-lg">
             AI-powered talent recommendations based on your preferences and
             hiring patterns
@@ -140,16 +145,17 @@ export default function RecommendationsPage() {
                 </div>
 
                 {isLoading ? (
-                  <p className="text-muted-foreground">Loading recommendations…</p>
+                  <p className="text-muted-foreground">
+                    Loading recommendations…
+                  </p>
                 ) : forYou.length === 0 ? (
-                  <p className="text-muted-foreground">No recommendations yet. Browse talent to get started.</p>
+                  <p className="text-muted-foreground">
+                    No recommendations yet. Browse talent to get started.
+                  </p>
                 ) : (
                   <div className="space-y-4">
                     {forYou.map((talent) => (
-                      <Card
-                        key={talent.id}
-                        className="hover:shadow-lg transition-shadow"
-                      >
+                      <Card key={talent.id} className="card-hover">
                         <CardContent className="pt-6">
                           <div className="flex items-start gap-4">
                             <Avatar className="h-16 w-16">
@@ -172,7 +178,7 @@ export default function RecommendationsPage() {
                                     {talent.title}
                                   </p>
                                   <div className="flex items-center gap-1 mt-1">
-                                    <Star className="h-4 w-4 fill-secondary text-secondary" />
+                                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                                     <span className="text-sm font-medium">
                                       {talent.rating?.toFixed(1) ?? "N/A"}
                                     </span>
@@ -252,16 +258,17 @@ export default function RecommendationsPage() {
                 </div>
 
                 {isLoading ? (
-                  <p className="text-muted-foreground">Loading trending talent…</p>
+                  <p className="text-muted-foreground">
+                    Loading trending talent…
+                  </p>
                 ) : trending.length === 0 ? (
-                  <p className="text-muted-foreground">No trending talent found.</p>
+                  <p className="text-muted-foreground">
+                    No trending talent found.
+                  </p>
                 ) : (
                   <div className="space-y-4">
                     {trending.map((talent) => (
-                      <Card
-                        key={talent.id}
-                        className="hover:shadow-lg transition-shadow"
-                      >
+                      <Card key={talent.id} className="card-hover">
                         <CardContent className="pt-6">
                           <div className="flex items-start gap-4">
                             <Avatar className="h-12 w-12">
@@ -277,14 +284,19 @@ export default function RecommendationsPage() {
                             <div className="flex-1">
                               <div className="flex items-start justify-between mb-2">
                                 <div>
-                                  <h3 className="font-semibold">{talent.name}</h3>
+                                  <h3 className="font-semibold">
+                                    {talent.name}
+                                  </h3>
                                   <p className="text-muted-foreground">
                                     {talent.title}
                                   </p>
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <TrendingUp className="h-4 w-4 text-secondary" />
-                                  <Badge variant="secondary" className="text-xs">
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs"
+                                  >
                                     Trending
                                   </Badge>
                                 </div>
@@ -296,9 +308,10 @@ export default function RecommendationsPage() {
 
                               <div className="flex items-center gap-4 mb-3 text-sm">
                                 <div className="flex items-center gap-1">
-                                  <Star className="h-4 w-4 fill-secondary text-secondary" />
+                                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                                   <span>
-                                    {talent.rating?.toFixed(1) ?? "N/A"} ({talent.reviewCount})
+                                    {talent.rating?.toFixed(1) ?? "N/A"} (
+                                    {talent.reviewCount})
                                   </span>
                                 </div>
                                 <div className="flex items-center gap-1">
@@ -356,7 +369,9 @@ export default function RecommendationsPage() {
                 </div>
 
                 {isLoading ? (
-                  <p className="text-muted-foreground">Loading similar talent…</p>
+                  <p className="text-muted-foreground">
+                    Loading similar talent…
+                  </p>
                 ) : similar.length === 0 ? (
                   <p className="text-muted-foreground">
                     Save or contact talent to get similar hire recommendations.
@@ -364,10 +379,7 @@ export default function RecommendationsPage() {
                 ) : (
                   <div className="space-y-4">
                     {similar.map((talent) => (
-                      <Card
-                        key={talent.id}
-                        className="hover:shadow-lg transition-shadow"
-                      >
+                      <Card key={talent.id} className="card-hover">
                         <CardContent className="pt-6">
                           <div className="flex items-start gap-4">
                             <Avatar className="h-12 w-12">
@@ -383,7 +395,9 @@ export default function RecommendationsPage() {
                             <div className="flex-1">
                               <div className="flex items-start justify-between mb-2">
                                 <div>
-                                  <h3 className="font-semibold">{talent.name}</h3>
+                                  <h3 className="font-semibold">
+                                    {talent.name}
+                                  </h3>
                                   <p className="text-muted-foreground">
                                     {talent.title}
                                   </p>
@@ -465,7 +479,9 @@ export default function RecommendationsPage() {
                   marketInsights.map((insight, index) => (
                     <div key={index} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">{insight.skill}</span>
+                        <span className="text-sm font-medium">
+                          {insight.skill}
+                        </span>
                         <Badge variant="outline" className="text-xs">
                           {insight.count} talent{insight.count !== 1 ? "s" : ""}
                         </Badge>
@@ -475,7 +491,10 @@ export default function RecommendationsPage() {
                         className="h-2"
                       />
                       <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Demand: {Math.round((insight.count / maxCount) * 100)}%</span>
+                        <span>
+                          Demand: {Math.round((insight.count / maxCount) * 100)}
+                          %
+                        </span>
                         <span>Avg: ${Math.round(insight.avgRate)}/hr</span>
                       </div>
                     </div>
@@ -503,13 +522,15 @@ export default function RecommendationsPage() {
                       <span className="text-sm text-muted-foreground">
                         Accepted
                       </span>
-                      <span className="font-medium">{employerStats.accepted}</span>
+                      <span className="font-medium">
+                        {employerStats.accepted}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm text-muted-foreground">
                         Response Rate
                       </span>
-                      <span className="font-medium text-green-500">
+                      <span className="font-medium text-emerald-600">
                         {Math.round(employerStats.responseRate * 100)}%
                       </span>
                     </div>
@@ -539,7 +560,7 @@ export default function RecommendationsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full justify-start bg-transparent"
+                  className="w-full justify-start"
                   asChild
                 >
                   <Link href="/search">
@@ -550,7 +571,7 @@ export default function RecommendationsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full justify-start bg-transparent"
+                  className="w-full justify-start"
                   asChild
                 >
                   <Link href="/employer/dashboard">
@@ -561,7 +582,7 @@ export default function RecommendationsPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full justify-start bg-transparent"
+                  className="w-full justify-start"
                   asChild
                 >
                   <Link href="/employer/profile">
@@ -577,4 +598,3 @@ export default function RecommendationsPage() {
     </div>
   );
 }
-

@@ -19,8 +19,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+    <html lang="en" className="scroll-smooth">
+      <body
+        className={`font-sans ${GeistSans.variable} ${GeistMono.variable} selection:bg-primary/20 selection:text-primary`}
+      >
         <AuthProvider>
           <Suspense fallback={null}>{children}</Suspense>
         </AuthProvider>

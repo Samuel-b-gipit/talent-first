@@ -18,51 +18,51 @@ export function Navbar() {
   const { user, isLoading, logout } = useAuth();
 
   return (
-    <header className="border-b border-border bg-card">
-      <div className="container mx-auto px-4 py-4">
+    <header className="sticky top-0 z-50 border-b border-border/40 glass">
+      <div className="container mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="h-9 w-9 bg-primary rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(79,70,229,0.25)] group-hover:shadow-[0_2px_12px_rgba(79,70,229,0.35)] transition-shadow duration-200">
               <span className="text-primary-foreground font-bold text-sm">
                 TF
               </span>
             </div>
-            <span className="text-xl font-bold text-foreground">
+            <span className="text-xl font-bold text-foreground tracking-tight">
               TalentFirst
             </span>
           </Link>
 
           {/* Right side — only render once auth state is known */}
           {!isLoading && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {/* Unauthenticated */}
               {!user && (
                 <>
-                  <nav className="hidden md:flex items-center gap-6 mr-2">
+                  <nav className="hidden md:flex items-center gap-1 mr-3">
                     <Link
                       href="/browse-talent"
-                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium"
                     >
                       Browse Talent
                     </Link>
                     <Link
                       href="/for-employers"
-                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium"
                     >
                       For Employers
                     </Link>
                     <Link
                       href="/how-it-works"
-                      className="text-muted-foreground hover:text-foreground transition-colors"
+                      className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium"
                     >
                       How It Works
                     </Link>
                   </nav>
-                  <Button variant="outline" asChild>
+                  <Button variant="ghost" size="sm" asChild>
                     <Link href="/login">Sign In</Link>
                   </Button>
-                  <Button asChild>
+                  <Button size="sm" asChild>
                     <Link href="/signup">Get Started</Link>
                   </Button>
                 </>

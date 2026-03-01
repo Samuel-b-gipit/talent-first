@@ -228,10 +228,11 @@ export default function SearchPage() {
       {/* Header */}
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-10">
         {/* Search Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+        <div className="mb-10 animate-fade-in">
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Discover</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 tracking-tight">
             Advanced Talent Search
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -264,7 +265,7 @@ export default function SearchPage() {
 
                 {/* Search Suggestions */}
                 {searchSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-card border border-border rounded-md shadow-lg z-10 mt-1">
+                  <div className="absolute top-full left-0 right-0 bg-card border border-border/60 rounded-xl shadow-lg z-10 mt-1 overflow-hidden">
                     {searchSuggestions.map((suggestion, index) => (
                       <button
                         key={index}
@@ -546,7 +547,7 @@ export default function SearchPage() {
             {sortedTalent.map((talent) => (
               <Card
                 key={talent.id}
-                className="hover:shadow-lg transition-shadow"
+                className="card-hover"
               >
                 <CardHeader>
                   <div className="flex items-start gap-4">
@@ -569,7 +570,7 @@ export default function SearchPage() {
                         {talent.title}
                       </CardDescription>
                       <div className="flex items-center gap-1 mt-1">
-                        <Star className="h-4 w-4 fill-secondary text-secondary" />
+                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                         <span className="text-sm font-medium">
                           {talent.rating}
                         </span>
@@ -680,7 +681,7 @@ export default function SearchPage() {
                 {savedSearches.slice(-3).map((search, index) => (
                   <div
                     key={index}
-                    className="flex items-center justify-between p-2 border rounded"
+                    className="flex items-center justify-between p-3 border border-border/60 rounded-xl"
                   >
                     <span className="text-sm">{search}</span>
                     <Button size="sm" variant="ghost">

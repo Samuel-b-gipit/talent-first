@@ -19,20 +19,25 @@ export default function ForEmployersPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="container mx-auto text-center max-w-4xl">
-          <h1 className="text-5xl font-bold text-foreground mb-6 text-balance">
+      <section className="relative py-24 md:py-32 px-4 hero-grid overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="container mx-auto text-center max-w-4xl relative">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/5 border border-primary/10 rounded-full text-sm font-medium text-primary mb-8 animate-fade-in">
+            <Building2 className="h-3.5 w-3.5" />
+            For Employers
+          </div>
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 animate-fade-in-up tracking-tight">
             Find Top Talent Who Want to{" "}
-            <span className="text-primary">Work With You</span>
+            <span className="gradient-text">Work With You</span>
           </h1>
-          <p className="text-xl text-muted-foreground mb-8 text-pretty">
+          <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed animate-fade-in-up stagger-1">
             Skip the endless resume screening. Browse profiles of pre-qualified
             professionals and send personalized proposals to the talent you want
             to hire.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button size="lg" className="text-lg px-8" asChild>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14 animate-fade-in-up stagger-2">
+            <Button size="lg" className="text-base px-8 h-12" asChild>
               <Link href="/browse-talent">
                 <Users className="mr-2 h-5 w-5" />
                 Browse Talent Now
@@ -41,7 +46,7 @@ export default function ForEmployersPage() {
             <Button
               size="lg"
               variant="outline"
-              className="text-lg px-8 bg-transparent"
+              className="text-base px-8 h-12"
               asChild
             >
               <Link href="/signup">
@@ -69,10 +74,13 @@ export default function ForEmployersPage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 px-4 bg-muted/30">
+      <section className="py-20 px-4 bg-muted/40">
         <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
+          <div className="text-center mb-14">
+            <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
+              How It Works
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               How TalentFirst Works for Employers
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -82,12 +90,15 @@ export default function ForEmployersPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="h-8 w-8 text-primary" />
+            <div className="text-center animate-fade-in-up stagger-1">
+              <div className="relative w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Users className="h-7 w-7 text-primary" />
+                <span className="absolute -top-2 -right-2 w-6 h-6 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center justify-center">
+                  1
+                </span>
               </div>
               <h3 className="text-xl font-semibold mb-2">
-                1. Browse Talent Profiles
+                Browse Talent Profiles
               </h3>
               <p className="text-muted-foreground">
                 Search through detailed profiles of pre-qualified professionals
@@ -95,12 +106,15 @@ export default function ForEmployersPage() {
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MessageSquare className="h-8 w-8 text-secondary" />
+            <div className="text-center animate-fade-in-up stagger-2">
+              <div className="relative w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="h-7 w-7 text-primary" />
+                <span className="absolute -top-2 -right-2 w-6 h-6 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center justify-center">
+                  2
+                </span>
               </div>
               <h3 className="text-xl font-semibold mb-2">
-                2. Send Personalized Proposals
+                Send Personalized Proposals
               </h3>
               <p className="text-muted-foreground">
                 Reach out directly with customized proposals that showcase your
@@ -108,13 +122,14 @@ export default function ForEmployersPage() {
               </p>
             </div>
 
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Building2 className="h-8 w-8 text-primary" />
+            <div className="text-center animate-fade-in-up stagger-3">
+              <div className="relative w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Building2 className="h-7 w-7 text-primary" />
+                <span className="absolute -top-2 -right-2 w-6 h-6 bg-primary text-primary-foreground text-xs font-bold rounded-full flex items-center justify-center">
+                  3
+                </span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">
-                3. Hire the Best Fit
-              </h3>
+              <h3 className="text-xl font-semibold mb-2">Hire the Best Fit</h3>
               <p className="text-muted-foreground">
                 Connect with interested candidates, conduct interviews, and hire
                 the perfect addition to your team.
@@ -125,10 +140,13 @@ export default function ForEmployersPage() {
       </section>
 
       {/* Benefits */}
-      <section className="py-16 px-4">
+      <section className="py-20 px-4">
         <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
+          <div className="text-center mb-14">
+            <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
+              Benefits
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Why Employers Choose TalentFirst
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -137,9 +155,11 @@ export default function ForEmployersPage() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <TrendingUp className="h-8 w-8 text-primary mb-2" />
+                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                </div>
                 <CardTitle>Higher Response Rates</CardTitle>
               </CardHeader>
               <CardContent>
@@ -151,9 +171,11 @@ export default function ForEmployersPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <Users className="h-8 w-8 text-secondary mb-2" />
+                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
+                  <Users className="h-5 w-5 text-primary" />
+                </div>
                 <CardTitle>Pre-Qualified Talent</CardTitle>
               </CardHeader>
               <CardContent>
@@ -164,9 +186,11 @@ export default function ForEmployersPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <MessageSquare className="h-8 w-8 text-primary mb-2" />
+                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
+                  <MessageSquare className="h-5 w-5 text-primary" />
+                </div>
                 <CardTitle>Direct Communication</CardTitle>
               </CardHeader>
               <CardContent>
@@ -177,9 +201,11 @@ export default function ForEmployersPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <CheckCircle className="h-8 w-8 text-green-500 mb-2" />
+                <div className="w-10 h-10 bg-emerald-500/10 rounded-xl flex items-center justify-center mb-2">
+                  <CheckCircle className="h-5 w-5 text-emerald-600" />
+                </div>
                 <CardTitle>No Job Posting Required</CardTitle>
               </CardHeader>
               <CardContent>
@@ -190,9 +216,11 @@ export default function ForEmployersPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <Star className="h-8 w-8 text-secondary mb-2" />
+                <div className="w-10 h-10 bg-amber-500/10 rounded-xl flex items-center justify-center mb-2">
+                  <Star className="h-5 w-5 text-amber-600" />
+                </div>
                 <CardTitle>Quality Over Quantity</CardTitle>
               </CardHeader>
               <CardContent>
@@ -203,9 +231,11 @@ export default function ForEmployersPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <Building2 className="h-8 w-8 text-primary mb-2" />
+                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center mb-2">
+                  <Building2 className="h-5 w-5 text-primary" />
+                </div>
                 <CardTitle>Company Branding</CardTitle>
               </CardHeader>
               <CardContent>
@@ -220,10 +250,13 @@ export default function ForEmployersPage() {
       </section>
 
       {/* Success Stories */}
-      <section className="py-16 px-4 bg-muted/30">
+      <section className="py-20 px-4 bg-muted/40">
         <div className="container mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
+          <div className="text-center mb-14">
+            <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
+              Testimonials
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Success Stories
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -232,10 +265,10 @@ export default function ForEmployersPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card>
+            <Card className="card-hover">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
                     <Building2 className="h-6 w-6 text-primary" />
                   </div>
                   <div>
@@ -257,11 +290,11 @@ export default function ForEmployersPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4 mb-4">
-                  <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
-                    <Building2 className="h-6 w-6 text-secondary" />
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                    <Building2 className="h-6 w-6 text-primary" />
                   </div>
                   <div>
                     <h3 className="font-semibold">GrowthCorp</h3>
@@ -286,24 +319,24 @@ export default function ForEmployersPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4">
+      <section className="py-24 px-4">
         <div className="container mx-auto text-center max-w-3xl">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
             Ready to Find Your Next Great Hire?
           </h2>
-          <p className="text-muted-foreground text-lg mb-8">
+          <p className="text-muted-foreground text-lg mb-10">
             Join hundreds of companies already using TalentFirst to build
             amazing teams
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="text-lg px-8" asChild>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button size="lg" className="text-base px-8 h-12" asChild>
               <Link href="/browse-talent">Start Browsing Talent</Link>
             </Button>
             <Button
               size="lg"
               variant="outline"
-              className="text-lg px-8 bg-transparent"
+              className="text-base px-8 h-12"
               asChild
             >
               <Link href="/signup">Create Free Account</Link>
@@ -331,7 +364,9 @@ export default function ForEmployersPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">For Employers</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-4">
+                For Employers
+              </h4>
               <ul className="space-y-2 text-muted-foreground">
                 <li>
                   <Link
@@ -361,7 +396,9 @@ export default function ForEmployersPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">For Talent</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-4">
+                For Talent
+              </h4>
               <ul className="space-y-2 text-muted-foreground">
                 <li>
                   <Link
@@ -391,7 +428,9 @@ export default function ForEmployersPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-4">
+                Company
+              </h4>
               <ul className="space-y-2 text-muted-foreground">
                 <li>
                   <Link
@@ -422,7 +461,7 @@ export default function ForEmployersPage() {
           </div>
 
           <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2024 TalentFirst. All rights reserved.</p>
+            <p>&copy; 2026 TalentFirst. All rights reserved.</p>
           </div>
         </div>
       </footer>

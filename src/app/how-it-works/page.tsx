@@ -25,12 +25,13 @@ export default function HowItWorksPage() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="py-16 px-4 bg-gradient-to-b from-primary/5 to-background">
-        <div className="container mx-auto text-center max-w-3xl">
-          <h1 className="text-5xl font-bold text-foreground mb-6 text-balance">
-            How TalentFirst Works
+      <section className="relative py-24 md:py-32 px-4 hero-grid overflow-hidden">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="container mx-auto text-center max-w-3xl relative">
+          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 tracking-tight animate-fade-in-up">
+            How TalentFirst <span className="gradient-text">Works</span>
           </h1>
-          <p className="text-xl text-muted-foreground text-pretty">
+          <p className="text-lg md:text-xl text-muted-foreground leading-relaxed animate-fade-in-up stagger-1">
             A revolutionary approach to hiring that puts talented professionals
             in control. No more endless applications—let opportunities come to
             you.
@@ -39,14 +40,14 @@ export default function HowItWorksPage() {
       </section>
 
       {/* For Talent Section */}
-      <section className="py-16 px-4">
+      <section className="py-20 px-4">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-4">
-              <Users className="h-5 w-5" />
-              <span className="font-semibold">For Talent</span>
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full mb-4 text-sm font-medium">
+              <Users className="h-4 w-4" />
+              <span>For Talent</span>
             </div>
-            <h2 className="text-3xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Get Discovered by Top Employers
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -55,10 +56,13 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="relative w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                   <Users className="h-6 w-6 text-primary" />
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                    1
+                  </span>
                 </div>
                 <CardTitle>1. Create Your Profile</CardTitle>
                 <CardDescription>
@@ -84,12 +88,15 @@ export default function HowItWorksPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
-                  <Search className="h-6 w-6 text-secondary" />
+                <div className="relative w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
+                  <Search className="h-6 w-6 text-primary" />
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                    2
+                  </span>
                 </div>
-                <CardTitle>2. Get Discovered</CardTitle>
+                <CardTitle>Get Discovered</CardTitle>
                 <CardDescription>
                   Employers search for talent and find your profile based on
                   their needs
@@ -113,12 +120,15 @@ export default function HowItWorksPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="relative w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                   <MessageSquare className="h-6 w-6 text-primary" />
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                    3
+                  </span>
                 </div>
-                <CardTitle>3. Review Proposals</CardTitle>
+                <CardTitle>Review Proposals</CardTitle>
                 <CardDescription>
                   Receive personalized job proposals directly from interested
                   employers
@@ -155,14 +165,14 @@ export default function HowItWorksPage() {
       </section>
 
       {/* For Employers Section */}
-      <section className="py-16 px-4 bg-muted/30">
+      <section className="py-20 px-4 bg-muted/40">
         <div className="container mx-auto max-w-6xl">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-secondary/10 text-secondary px-4 py-2 rounded-full mb-4">
-              <Building2 className="h-5 w-5" />
-              <span className="font-semibold">For Employers</span>
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full mb-4 text-sm font-medium">
+              <Building2 className="h-4 w-4" />
+              <span>For Employers</span>
             </div>
-            <h2 className="text-3xl font-bold text-foreground mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Find and Hire Top Talent Faster
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -172,12 +182,15 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="relative w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                   <Search className="h-6 w-6 text-primary" />
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                    1
+                  </span>
                 </div>
-                <CardTitle>1. Search Talent</CardTitle>
+                <CardTitle>Search Talent</CardTitle>
                 <CardDescription>
                   Browse profiles of qualified professionals with the skills you
                   need
@@ -201,12 +214,15 @@ export default function HowItWorksPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4">
-                  <MessageSquare className="h-6 w-6 text-secondary" />
+                <div className="relative w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
+                  <MessageSquare className="h-6 w-6 text-primary" />
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                    2
+                  </span>
                 </div>
-                <CardTitle>2. Send Proposals</CardTitle>
+                <CardTitle>Send Proposals</CardTitle>
                 <CardDescription>
                   Reach out directly with personalized job proposals to
                   candidates you like
@@ -230,12 +246,15 @@ export default function HowItWorksPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                <div className="relative w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
                   <Star className="h-6 w-6 text-primary" />
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center">
+                    3
+                  </span>
                 </div>
-                <CardTitle>3. Hire Great Talent</CardTitle>
+                <CardTitle>Hire Great Talent</CardTitle>
                 <CardDescription>
                   Connect with interested candidates and make your next great
                   hire
@@ -272,10 +291,13 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-16 px-4">
+      <section className="py-20 px-4">
         <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-4">
+          <div className="text-center mb-14">
+            <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-3">
+              Benefits
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
               Why Choose TalentFirst?
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -284,7 +306,7 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
@@ -299,7 +321,7 @@ export default function HowItWorksPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
@@ -314,7 +336,7 @@ export default function HowItWorksPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
@@ -329,7 +351,7 @@ export default function HowItWorksPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <CheckCircle className="h-5 w-5 text-primary" />
@@ -348,16 +370,16 @@ export default function HowItWorksPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 px-4 bg-primary/5">
+      <section className="py-24 px-4 bg-muted/40">
         <div className="container mx-auto text-center max-w-3xl">
-          <h2 className="text-3xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
             Ready to Get Started?
           </h2>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className="text-lg text-muted-foreground mb-10">
             Join TalentFirst today and experience a better way to find
             opportunities or hire talent.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button size="lg" asChild>
               <Link href="/create-profile">
                 <Users className="mr-2 h-5 w-5" />
@@ -393,7 +415,9 @@ export default function HowItWorksPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">For Talent</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-4">
+                For Talent
+              </h4>
               <ul className="space-y-2 text-muted-foreground">
                 <li>
                   <Link
@@ -415,7 +439,9 @@ export default function HowItWorksPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">For Employers</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-4">
+                For Employers
+              </h4>
               <ul className="space-y-2 text-muted-foreground">
                 <li>
                   <Link
@@ -437,7 +463,9 @@ export default function HowItWorksPage() {
             </div>
 
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
+              <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground mb-4">
+                Company
+              </h4>
               <ul className="space-y-2 text-muted-foreground">
                 <li>
                   <Link
@@ -452,7 +480,7 @@ export default function HowItWorksPage() {
           </div>
 
           <div className="border-t border-border mt-8 pt-8 text-center text-muted-foreground">
-            <p>&copy; 2025 TalentFirst. All rights reserved.</p>
+            <p>&copy; 2026 TalentFirst. All rights reserved.</p>
           </div>
         </div>
       </footer>

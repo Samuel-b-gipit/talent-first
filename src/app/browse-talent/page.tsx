@@ -72,10 +72,13 @@ export default function BrowseTalentPage() {
       {/* Header */}
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-10">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+        <div className="mb-10 animate-fade-in">
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
+            Discover
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
             Browse Talent
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -84,17 +87,17 @@ export default function BrowseTalentPage() {
         </div>
 
         {/* Search and Filters */}
-        <Card className="mb-8">
+        <Card className="mb-8 animate-fade-in stagger-1">
           <CardContent className="pt-6">
             <div className="space-y-4">
               {/* Search Bar */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 transition-colors group-focus-within:text-primary" />
                 <Input
                   placeholder="Search by name, title, or skills..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-11"
                 />
               </div>
 
@@ -150,10 +153,7 @@ export default function BrowseTalentPage() {
                   </SelectContent>
                 </Select>
 
-                <Button
-                  variant="outline"
-                  className="flex items-center gap-2 bg-transparent"
-                >
+                <Button variant="outline" className="flex items-center gap-2">
                   <Filter className="h-4 w-4" />
                   More Filters
                 </Button>
@@ -163,29 +163,55 @@ export default function BrowseTalentPage() {
         </Card>
 
         {/* Results */}
-        <div className="mb-4">
-          <p className="text-muted-foreground">
-            Showing {filteredTalent.length} of{" "}
-            {isLoading ? "..." : talents.length} professionals
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Showing{" "}
+            <span className="font-semibold text-foreground">
+              {filteredTalent.length}
+            </span>{" "}
+            of {isLoading ? "..." : talents.length} professionals
           </p>
         </div>
 
         {/* Talent Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {isLoading ? (
-            <div className="col-span-3 text-center py-20 text-muted-foreground">
-              Loading talent...
-            </div>
+            <>
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div
+                  key={i}
+                  className="rounded-2xl border border-border/60 p-6 space-y-4"
+                >
+                  <div className="flex gap-4">
+                    <div className="h-12 w-12 rounded-full skeleton" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 w-32 skeleton" />
+                      <div className="h-3 w-24 skeleton" />
+                    </div>
+                  </div>
+                  <div className="h-3 w-full skeleton" />
+                  <div className="h-3 w-3/4 skeleton" />
+                  <div className="flex gap-2">
+                    <div className="h-6 w-16 skeleton" />
+                    <div className="h-6 w-16 skeleton" />
+                    <div className="h-6 w-16 skeleton" />
+                  </div>
+                </div>
+              ))}
+            </>
           ) : filteredTalent.length === 0 ? (
-            <div className="col-span-3 text-center py-20 text-muted-foreground">
-              No talent found matching your filters.
+            <div className="col-span-3 text-center py-20">
+              <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Search className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No talent found</h3>
+              <p className="text-muted-foreground mb-4">
+                Try adjusting your search criteria or filters
+              </p>
             </div>
           ) : (
             filteredTalent.map((talent) => (
-              <Card
-                key={talent.id}
-                className="hover:shadow-lg transition-shadow"
-              >
+              <Card key={talent.id} className="card-hover">
                 <CardHeader>
                   <div className="flex items-start gap-4">
                     <Avatar className="h-12 w-12">
@@ -205,8 +231,8 @@ export default function BrowseTalentPage() {
                         {talent.title}
                       </CardDescription>
                       <div className="flex items-center gap-1 mt-1">
-                        <Star className="h-4 w-4 fill-secondary text-secondary" />
-                        <span className="text-sm font-medium">
+                        <Star className="h-3.5 w-3.5 fill-accent text-accent" />
+                        <span className="text-sm font-semibold">
                           {talent.rating}
                         </span>
                         <span className="text-sm text-muted-foreground">
@@ -233,7 +259,7 @@ export default function BrowseTalentPage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap gap-1.5">
                       {talent.skills.slice(0, 3).map((skill, skillIndex) => (
                         <Badge
                           key={skill + skillIndex}

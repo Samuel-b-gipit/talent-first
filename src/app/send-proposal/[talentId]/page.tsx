@@ -123,7 +123,7 @@ export default function SendProposalPage({
       {/* Header */}
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-6 py-10 max-w-6xl">
         {/* Back Button */}
         <Button variant="ghost" className="mb-6" asChild>
           <Link href={talent ? `/profile/${talent.userId}` : "/browse-talent"}>
@@ -140,9 +140,11 @@ export default function SendProposalPage({
           <div className="grid lg:grid-cols-3 gap-8">
             {/* Talent Summary */}
             <div className="lg:col-span-1">
-              <Card className="sticky top-8">
+              <Card className="sticky top-20">
                 <CardHeader>
-                  <CardTitle>Sending Proposal To</CardTitle>
+                  <CardTitle className="text-sm uppercase tracking-wider text-muted-foreground">
+                    Sending Proposal To
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center gap-4 mb-4">
@@ -159,7 +161,7 @@ export default function SendProposalPage({
                       <h3 className="font-semibold text-lg">{talent?.name}</h3>
                       <p className="text-muted-foreground">{talent?.title}</p>
                       <div className="flex items-center gap-1 mt-1">
-                        <Star className="h-4 w-4 fill-secondary text-secondary" />
+                        <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                         <span className="text-sm">
                           {talent?.rating} ({talent?.reviewCount})
                         </span>

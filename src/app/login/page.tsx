@@ -53,21 +53,21 @@ export default function LoginPage() {
       <Navbar />
 
       {/* Form */}
-      <div className="flex items-center justify-center p-4 py-16">
-        <div className="w-full max-w-md">
+      <div className="flex items-center justify-center p-4 py-20 min-h-[calc(100vh-57px)]">
+        <div className="w-full max-w-md animate-fade-in-up">
           {/* Header */}
-          <div className="text-center mb-8">
-            <Link href="/" className="inline-flex items-center gap-2 mb-6">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+          <div className="text-center mb-10">
+            <Link href="/" className="inline-flex items-center gap-2.5 mb-8">
+              <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(79,70,229,0.25)]">
                 <span className="text-primary-foreground font-bold text-sm">
                   TF
                 </span>
               </div>
-              <span className="text-xl font-bold text-foreground">
+              <span className="text-2xl font-bold text-foreground tracking-tight">
                 TalentFirst
               </span>
             </Link>
-            <h1 className="text-2xl font-bold text-foreground mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Welcome back
             </h1>
             <p className="text-muted-foreground">
@@ -75,7 +75,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <Card>
+          <Card className="shadow-[0_4px_24px_rgba(0,0,0,0.06)]">
             <CardHeader>
               <CardTitle>Sign In</CardTitle>
               <CardDescription>

@@ -65,17 +65,17 @@ export default async function ProfilePage({
       {/* Header */}
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-6 py-10 max-w-6xl">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Profile Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Profile Header */}
-            <Card>
+            <Card className="animate-fade-in">
               <CardContent className="pt-6">
                 <div className="flex flex-col sm:flex-row gap-6">
-                  <Avatar className="h-24 w-24">
+                  <Avatar className="h-24 w-24 ring-4 ring-primary/10">
                     <AvatarImage src={profile.avatarUrl ?? ""} />
-                    <AvatarFallback className="text-2xl">
+                    <AvatarFallback className="text-2xl bg-primary/5 text-primary font-bold">
                       {profile.name
                         .split(" ")
                         .map((n) => n[0])
@@ -86,7 +86,7 @@ export default async function ProfilePage({
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div>
-                        <h1 className="text-3xl font-bold text-foreground">
+                        <h1 className="text-3xl font-bold text-foreground tracking-tight">
                           {profile.name}
                         </h1>
                         <p className="text-xl text-muted-foreground mb-2">
@@ -103,7 +103,7 @@ export default async function ProfilePage({
                             {profile.experience} experience
                           </div>
                           <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-secondary text-secondary" />
+                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                             {profile.rating} ({profile.reviewCount} reviews)
                           </div>
                         </div>
@@ -113,9 +113,9 @@ export default async function ProfilePage({
                         <div className="text-2xl font-bold text-primary">
                           ${profile.rate}/hour
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <Badge variant="default" className="text-xs">
                           {profile.availability}
-                        </div>
+                        </Badge>
                       </div>
                     </div>
                   </div>
@@ -158,18 +158,18 @@ export default async function ProfilePage({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
                     <span className="text-sm font-medium">Remote Work</span>
                     <Badge
-                      variant={profile.openToRemote ? "default" : "secondary"}
+                      variant={profile.openToRemote ? "success" : "secondary"}
                     >
                       {profile.openToRemote ? "Available" : "Not Available"}
                     </Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between p-4 bg-muted/50 rounded-xl">
                     <span className="text-sm font-medium">Contract Work</span>
                     <Badge
-                      variant={profile.openToContract ? "default" : "secondary"}
+                      variant={profile.openToContract ? "success" : "secondary"}
                     >
                       {profile.openToContract ? "Available" : "Not Available"}
                     </Badge>
@@ -190,7 +190,7 @@ export default async function ProfilePage({
                       href={profile.portfolio}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex items-center gap-2 p-4 border border-border/60 rounded-xl hover:bg-muted/50 transition-all duration-200 hover:-translate-y-px"
                     >
                       <Globe className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">Portfolio</span>
@@ -202,7 +202,7 @@ export default async function ProfilePage({
                       href={profile.linkedin}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex items-center gap-2 p-4 border border-border/60 rounded-xl hover:bg-muted/50 transition-all duration-200 hover:-translate-y-px"
                     >
                       <Linkedin className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">LinkedIn</span>
@@ -214,7 +214,7 @@ export default async function ProfilePage({
                       href={profile.github}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex items-center gap-2 p-4 border border-border/60 rounded-xl hover:bg-muted/50 transition-all duration-200 hover:-translate-y-px"
                     >
                       <Github className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">GitHub</span>
@@ -226,7 +226,7 @@ export default async function ProfilePage({
                       href={profile.website}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex items-center gap-2 p-4 border border-border/60 rounded-xl hover:bg-muted/50 transition-all duration-200 hover:-translate-y-px"
                     >
                       <Globe className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">Website</span>
@@ -254,11 +254,7 @@ export default async function ProfilePage({
                       Send Proposal
                     </Link>
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full bg-transparent"
-                    asChild
-                  >
+                  <Button variant="outline" className="w-full" asChild>
                     <Link href={`/send-proposal/${profile.userId}`}>
                       <MessageSquare className="mr-2 h-4 w-4" />
                       Send Message
@@ -335,7 +331,7 @@ export default async function ProfilePage({
                     <Link
                       key={talent.id}
                       href={`/profile/${talent.id}`}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer block"
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                     >
                       <div>
                         <div className="font-medium text-sm">{talent.name}</div>
@@ -349,12 +345,7 @@ export default async function ProfilePage({
                     </Link>
                   ))
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full bg-transparent"
-                  asChild
-                >
+                <Button variant="outline" size="sm" className="w-full" asChild>
                   <Link href="/browse-talent">View More</Link>
                 </Button>
               </CardContent>

@@ -248,7 +248,7 @@ export default function EmployerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Button className="h-20 flex-col gap-2" asChild>
+                  <Button className="h-20 flex-col gap-2 rounded-xl" asChild>
                     <Link href="/browse-talent">
                       <Users className="h-6 w-6" />
                       Browse Talent
@@ -256,7 +256,7 @@ export default function EmployerDashboard() {
                   </Button>
                   <Button
                     variant="outline"
-                    className="h-20 flex-col gap-2 bg-transparent"
+                    className="h-20 flex-col gap-2 rounded-xl"
                     asChild
                   >
                     <Link href="/employer/profile">
@@ -281,7 +281,7 @@ export default function EmployerDashboard() {
                   {proposals.slice(0, 3).map((proposal) => (
                     <div
                       key={proposal.id}
-                      className="flex items-center gap-4 p-4 border rounded-lg"
+                      className="flex items-center gap-4 p-4 border border-border/60 rounded-xl hover:bg-muted/30 transition-colors"
                     >
                       <Avatar className="h-10 w-10">
                         <AvatarImage src="/placeholder.svg" />
@@ -359,7 +359,7 @@ export default function EmployerDashboard() {
                                   {proposal.talent?.name ?? "Unknown"}
                                 </h3>
                                 <div className="flex items-center gap-1">
-                                  <Star className="h-4 w-4 fill-secondary text-secondary" />
+                                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                                   <span className="text-sm">
                                     {proposal.talent?.talentProfile?.rating ??
                                       "—"}
@@ -475,7 +475,7 @@ export default function EmployerDashboard() {
                             </CardTitle>
                             <CardDescription>{talent.title}</CardDescription>
                             <div className="flex items-center gap-1 mt-1">
-                              <Star className="h-4 w-4 fill-secondary text-secondary" />
+                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                               <span className="text-sm font-medium">
                                 {talent.rating}
                               </span>
@@ -632,7 +632,7 @@ export default function EmployerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-xl">
                     <TrendingUp className="h-5 w-5 text-primary mt-0.5" />
                     <div>
                       <p className="font-medium">Improve response rates</p>
@@ -642,7 +642,7 @@ export default function EmployerDashboard() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-start gap-3 p-4 bg-muted/50 rounded-xl">
                     <Building2 className="h-5 w-5 text-secondary mt-0.5" />
                     <div>
                       <p className="font-medium">

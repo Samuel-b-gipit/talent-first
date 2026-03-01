@@ -143,10 +143,13 @@ export default function ProposalsPage() {
       {/* Header */}
       <Navbar />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-10">
         {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
+        <div className="mb-10 animate-fade-in">
+          <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">
+            Inbox
+          </p>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 tracking-tight">
             My Proposals
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -155,7 +158,7 @@ export default function ProposalsPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid md:grid-cols-4 gap-4 mb-8">
+        <div className="grid md:grid-cols-4 gap-4 mb-10">
           <Card>
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -165,7 +168,7 @@ export default function ProposalsPage() {
                   </p>
                   <p className="text-2xl font-bold">{proposals.length}</p>
                 </div>
-                <Mail className="h-8 w-8 text-primary" />
+                <Mail className="h-8 w-8 text-primary/60" />
               </div>
             </CardContent>
           </Card>
@@ -181,7 +184,7 @@ export default function ProposalsPage() {
                     {pendingProposals.length}
                   </p>
                 </div>
-                <Clock className="h-8 w-8 text-secondary" />
+                <Clock className="h-8 w-8 text-amber-500/60" />
               </div>
             </CardContent>
           </Card>
@@ -195,7 +198,7 @@ export default function ProposalsPage() {
                   </p>
                   <p className="text-2xl font-bold">85%</p>
                 </div>
-                <MessageSquare className="h-8 w-8 text-green-500" />
+                <MessageSquare className="h-8 w-8 text-emerald-500/60" />
               </div>
             </CardContent>
           </Card>
@@ -209,7 +212,7 @@ export default function ProposalsPage() {
                   </p>
                   <p className="text-2xl font-bold">$123/hr</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-primary" />
+                <DollarSign className="h-8 w-8 text-primary/60" />
               </div>
             </CardContent>
           </Card>
@@ -246,10 +249,7 @@ export default function ProposalsPage() {
             {!isLoading &&
               proposals.length > 0 &&
               proposals.map((proposal) => (
-                <Card
-                  key={proposal.id}
-                  className="hover:shadow-md transition-shadow"
-                >
+                <Card key={proposal.id} className="card-hover">
                   <CardContent className="pt-6">
                     <div className="flex items-start gap-4">
                       <Avatar className="h-12 w-12">
@@ -579,7 +579,7 @@ export default function ProposalsPage() {
             {pendingProposals.map((proposal) => (
               <Card
                 key={proposal.id}
-                className="hover:shadow-md transition-shadow border-l-4 border-l-secondary"
+                className="card-hover border-l-4 border-l-amber-400"
               >
                 <CardContent className="pt-6">
                   <div className="flex items-start gap-4">
@@ -668,9 +668,9 @@ export default function ProposalsPage() {
               respondedProposals.map((proposal) => (
                 <Card
                   key={proposal.id}
-                  className={`hover:shadow-md transition-shadow border-l-4 ${
+                  className={`card-hover border-l-4 ${
                     proposal.status === "accepted"
-                      ? "border-l-green-500"
+                      ? "border-l-emerald-500"
                       : "border-l-red-500"
                   }`}
                 >
