@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "concurrently \"next dev -p 3000\" \"npm run open-browser\"",
     "open-browser": "start http://localhost:3000",
-    "build": "next build --turbopack",
+    "build": "next build",
     "start": "next start & open http://localhost:3000",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
