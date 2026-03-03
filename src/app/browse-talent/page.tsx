@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { talentsApi, savedTalentsApi, type TalentProfile } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast, Toaster } from "sonner";
@@ -80,7 +79,9 @@ export default function BrowseTalentPage() {
 
   const filteredTalent = talents.filter((talent) => {
     const matchesSearch =
-      talent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (talent.user?.name ?? "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       talent.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       talent.skills.some((skill) =>
         skill.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -107,8 +108,6 @@ export default function BrowseTalentPage() {
   return (
     <div className="min-h-screen bg-background">
       <Toaster position="top-right" richColors />
-      {/* Header */}
-      <Navbar />
 
       <div className="container mx-auto px-6 py-10">
         {/* Page Header */}
@@ -255,7 +254,7 @@ export default function BrowseTalentPage() {
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={talent.avatarUrl ?? ""} />
                       <AvatarFallback>
-                        {talent.name
+                        {(talent.user?.name ?? "")
                           .split(" ")
                           .map((n) => n[0])
                           .join("")}
@@ -263,7 +262,7 @@ export default function BrowseTalentPage() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-lg truncate">
-                        {talent.name}
+                        {talent.user?.name}
                       </CardTitle>
                       <CardDescription className="text-base">
                         {talent.title}
@@ -338,7 +337,9 @@ export default function BrowseTalentPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleSaveTalent(talent.id, talent.name)}
+                        onClick={() =>
+                          handleSaveTalent(talent.id, talent.user?.name ?? "")
+                        }
                         disabled={savedTalentIds.includes(talent.id)}
                         title="Save talent"
                       >

@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/Navbar";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/auth";
@@ -52,7 +51,12 @@ export default async function ProfilePage({
       skills: { hasSome: profile.skills.slice(0, 2) },
     },
     take: 2,
-    select: { id: true, name: true, title: true, rate: true },
+    select: {
+      id: true,
+      title: true,
+      rate: true,
+      user: { select: { name: true } },
+    },
   });
 
   const joinedDate = new Date(profile.createdAt).toLocaleDateString("en-US", {
@@ -62,9 +66,6 @@ export default async function ProfilePage({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Navbar />
-
       <div className="container mx-auto px-6 py-10 max-w-6xl">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Profile Content */}
@@ -76,7 +77,7 @@ export default async function ProfilePage({
                   <Avatar className="h-24 w-24 ring-4 ring-primary/10">
                     <AvatarImage src={profile.avatarUrl ?? ""} />
                     <AvatarFallback className="text-2xl bg-primary/5 text-primary font-bold">
-                      {profile.name
+                      {(profile.user?.name ?? "")
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
@@ -87,7 +88,7 @@ export default async function ProfilePage({
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div>
                         <h1 className="text-3xl font-bold text-foreground tracking-tight">
-                          {profile.name}
+                          {profile.user?.name}
                         </h1>
                         <p className="text-xl text-muted-foreground mb-2">
                           {profile.title}
@@ -244,7 +245,9 @@ export default async function ProfilePage({
             {isEmployer && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Contact {profile.name.split(" ")[0]}</CardTitle>
+                  <CardTitle>
+                    Contact {profile.user?.name?.split(" ")[0]}
+                  </CardTitle>
                   <CardDescription>Send a proposal or message</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -334,7 +337,9 @@ export default async function ProfilePage({
                       className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
                     >
                       <div>
-                        <div className="font-medium text-sm">{talent.name}</div>
+                        <div className="font-medium text-sm">
+                          {talent.user?.name}
+                        </div>
                         <div className="text-xs text-muted-foreground">
                           {talent.title}
                         </div>

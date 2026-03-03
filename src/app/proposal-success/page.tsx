@@ -1,4 +1,3 @@
-import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,9 +12,6 @@ import Link from "next/link";
 export default function ProposalSuccessPage() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Navbar />
-
       <div className="container mx-auto px-6 py-20 max-w-2xl">
         <div className="text-center mb-10 animate-fade-in-up">
           <div className="w-20 h-20 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6">

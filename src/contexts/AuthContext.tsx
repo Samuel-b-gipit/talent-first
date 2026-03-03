@@ -8,8 +8,22 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { authApi, companiesApi } from "@/lib/api";
+
+// Mirror of the middleware protected routes — used for client-side redirect
+// when a stale session cookie is cleared after the /api/auth/me check fails.
+const PROTECTED_PREFIXES = [
+  "/proposals",
+  "/create-profile",
+  "/profile",
+  "/recommendations",
+  "/browse-talent",
+  "/search",
+  "/send-proposal",
+  "/proposal-success",
+  "/employer",
+];
 
 export type UserRole = "TALENT" | "EMPLOYER";
 
@@ -53,23 +67,27 @@ export function AuthProvider({
   const [companyName, setCompanyName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const pathname = usePathname();
 
   const refreshUser = useCallback(async () => {
     try {
-      const { data } = await authApi.me();
+      const { data, error } = await authApi.me();
       const fetchedUser = data?.user ?? null;
       setUser(fetchedUser);
-      if (fetchedUser?.role === "EMPLOYER") {
+      let newCompanyName = "";
+      if (!fetchedUser) {
+        if (error) await authApi.logout();
+      } else if (fetchedUser.role === "EMPLOYER") {
         const { data: companyData } = await companiesApi.getById(
           fetchedUser.id,
         );
-        setCompanyName(companyData?.companyName ?? "");
-      } else {
-        setCompanyName("");
+        newCompanyName = companyData?.companyName ?? "";
       }
+      setCompanyName(newCompanyName);
     } catch {
       setUser(null);
       setCompanyName("");
+      await authApi.logout();
     }
   }, []);
 
@@ -77,6 +95,16 @@ export function AuthProvider({
   useEffect(() => {
     refreshUser().finally(() => setIsLoading(false));
   }, [refreshUser]);
+
+  // Once the auth check resolves, redirect unauthenticated users away from
+  // protected routes (guards against stale sessions that passed the middleware).
+  useEffect(() => {
+    if (!isLoading && !user) {
+      if (PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+        router.replace("/login");
+      }
+    }
+  }, [isLoading, user, pathname, router]);
 
   const login = useCallback(
     async (

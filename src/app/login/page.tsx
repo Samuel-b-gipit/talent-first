@@ -3,7 +3,6 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Navbar } from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -49,9 +48,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav Header */}
-      <Navbar />
-
       {/* Form */}
       <div className="flex items-center justify-center p-4 py-20 min-h-[calc(100vh-57px)]">
         <div className="w-full max-w-md animate-fade-in-up">

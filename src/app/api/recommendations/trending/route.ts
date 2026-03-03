@@ -11,6 +11,7 @@ export async function GET() {
         { updatedAt: "desc" },
       ],
       take: 20,
+      include: { user: true },
     });
     return NextResponse.json(trending);
   } catch (error) {

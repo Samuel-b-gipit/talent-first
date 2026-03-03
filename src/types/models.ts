@@ -21,7 +21,6 @@ export interface User {
 export interface TalentProfile {
   id: string;
   userId: string;
-  name: string;
   title: string;
   location: string;
   skills: string[];

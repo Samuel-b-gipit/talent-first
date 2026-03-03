@@ -3,7 +3,6 @@
 import type React from "react";
 
 import { useState } from "react";
-import { Navbar } from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -58,9 +57,6 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav Header */}
-      <Navbar />
-
       <div className="flex items-center justify-center p-4 py-20 min-h-[calc(100vh-57px)]">
         <div className="w-full max-w-md animate-fade-in-up">
           {/* Header */}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -105,7 +104,9 @@ export default function SearchPage() {
     // Text search
     const matchesSearch =
       searchQuery === "" ||
-      talent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (talent.user?.name ?? "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       talent.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       talent.skills.some((skill) =>
         skill.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -227,9 +228,6 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Navbar />
-
       <div className="container mx-auto px-6 py-10">
         {/* Search Header */}
         <div className="mb-10 animate-fade-in">
@@ -552,10 +550,10 @@ export default function SearchPage() {
                   <div className="flex items-start gap-4">
                     <Avatar className="h-12 w-12">
                       <AvatarImage
-                        src={`/professional-headshot.png?height=48&width=48&query=${talent.name} headshot`}
+                        src={`/professional-headshot.png?height=48&width=48&query=${talent.user?.name} headshot`}
                       />
                       <AvatarFallback>
-                        {talent.name
+                        {(talent.user?.name ?? "")
                           .split(" ")
                           .map((n) => n[0])
                           .join("")}
@@ -563,7 +561,7 @@ export default function SearchPage() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-lg truncate">
-                        {talent.name}
+                        {talent.user?.name}
                       </CardTitle>
                       <CardDescription className="text-base">
                         {talent.title}

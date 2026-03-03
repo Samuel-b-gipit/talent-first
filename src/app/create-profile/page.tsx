@@ -3,7 +3,6 @@
 import type React from "react";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { talentsApi } from "@/lib/api";
@@ -113,7 +112,6 @@ export default function CreateProfilePage() {
     }
 
     const payload = {
-      name: user?.name ?? "",
       avatarUrl: avatarUrl || null,
       title: formData.title,
       bio: formData.bio,
@@ -168,8 +166,6 @@ export default function CreateProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-
       {isFetching ? (
         <div className="flex justify-center items-center min-h-[60vh]">
           <p className="text-muted-foreground">Loading...</p>

@@ -41,7 +41,6 @@ enum UserRole {
 model TalentProfile {
   id          String   @id @default(cuid())
   userId      String   @unique
-  name        String
   title       String
   location    String
   skills      String[]

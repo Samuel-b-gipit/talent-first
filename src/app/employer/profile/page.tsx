@@ -3,7 +3,6 @@
 import type React from "react";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { companiesApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -178,9 +177,6 @@ export default function CompanyProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Navbar />
-
       <div className="container mx-auto px-6 py-10 max-w-4xl">
         <div className="mb-10 animate-fade-in">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">

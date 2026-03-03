@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { proposalsApi } from "@/lib/api";
 import type { Proposal } from "@/types/models";
@@ -139,9 +138,6 @@ export default function ProposalsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Navbar />
-
       <div className="container mx-auto px-6 py-10">
         {/* Page Header */}
         <div className="mb-10 animate-fade-in">

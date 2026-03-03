@@ -3,7 +3,6 @@
 import type React from "react";
 
 import { useState, useEffect, use } from "react";
-import { Navbar } from "@/components/Navbar";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -116,9 +115,6 @@ export default function SendProposalPage({
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Navbar />
-
       <div className="container mx-auto px-6 py-10 max-w-6xl">
         {/* Back Button */}
         <Button variant="ghost" className="mb-6" asChild>
@@ -147,14 +143,16 @@ export default function SendProposalPage({
                     <Avatar className="h-16 w-16">
                       <AvatarImage src={"/placeholder.svg"} />
                       <AvatarFallback className="text-xl">
-                        {talent?.name
+                        {talent?.user?.name
                           ?.split(" ")
                           .map((n) => n[0])
                           .join("") ?? "?"}
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <h3 className="font-semibold text-lg">{talent?.name}</h3>
+                      <h3 className="font-semibold text-lg">
+                        {talent?.user?.name}
+                      </h3>
                       <p className="text-muted-foreground">{talent?.title}</p>
                       <div className="flex items-center gap-1 mt-1">
                         <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
@@ -209,7 +207,7 @@ export default function SendProposalPage({
                   </CardTitle>
                   <CardDescription>
                     Create a compelling proposal to attract{" "}
-                    {talent?.name?.split(" ")[0] ?? "this talent"} to your
+                    {talent?.user?.name?.split(" ")[0] ?? "this talent"} to your
                     opportunity
                   </CardDescription>
                 </CardHeader>
@@ -410,7 +408,7 @@ export default function SendProposalPage({
                         <Label htmlFor="message">Personal Message</Label>
                         <Textarea
                           id="message"
-                          placeholder={`Hi ${talent?.name?.split(" ")[0] ?? ""},\n\nI came across your profile and was impressed by your experience with ${(talent?.skills ?? []).slice(0, 2).join(" and ")}. We have an exciting opportunity that I think would be a great fit for your skills...\n\nLooking forward to hearing from you!`}
+                          placeholder={`Hi ${talent?.user?.name?.split(" ")[0] ?? ""},\n\nI came across your profile and was impressed by your experience with ${(talent?.skills ?? []).slice(0, 2).join(" and ")}. We have an exciting opportunity that I think would be a great fit for your skills...\n\nLooking forward to hearing from you!`}
                           value={formData.message}
                           onChange={(e) =>
                             handleInputChange("message", e.target.value)
@@ -422,7 +420,7 @@ export default function SendProposalPage({
                         <p className="text-sm text-muted-foreground">
                           Write a personalized message explaining why you're
                           interested in working with{" "}
-                          {talent?.name?.split(" ")[0] ?? "them"}
+                          {talent?.user?.name?.split(" ")[0] ?? "them"}
                         </p>
                       </div>
 

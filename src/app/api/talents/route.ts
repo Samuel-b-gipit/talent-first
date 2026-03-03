@@ -57,7 +57,6 @@ export async function POST(req: NextRequest) {
   // Parse and validate input
   const data = await req.json();
   const {
-    name,
     title,
     bio,
     skills,
@@ -74,7 +73,6 @@ export async function POST(req: NextRequest) {
     openToContract,
   } = data;
   if (
-    !name ||
     !title ||
     !bio ||
     !skills ||
@@ -95,7 +93,6 @@ export async function POST(req: NextRequest) {
     const profile = await prisma.talentProfile.create({
       data: {
         userId: user.id,
-        name,
         title,
         bio,
         skills,
@@ -111,6 +108,7 @@ export async function POST(req: NextRequest) {
         openToRemote: openToRemote ?? true,
         openToContract: openToContract ?? true,
       },
+      include: { user: true },
     });
     return NextResponse.json(profile, { status: 201 });
   } catch (error) {

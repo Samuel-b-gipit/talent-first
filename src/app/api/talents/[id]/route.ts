@@ -44,7 +44,6 @@ export async function PUT(
   // Parse and validate input
   const data = await req.json();
   const {
-    name,
     title,
     bio,
     skills,
@@ -61,7 +60,6 @@ export async function PUT(
     openToContract,
   } = data;
   if (
-    !name ||
     !title ||
     !bio ||
     !skills ||
@@ -85,7 +83,6 @@ export async function PUT(
     const updated = await prisma.talentProfile.update({
       where: { id },
       data: {
-        name,
         title,
         bio,
         skills,
@@ -101,6 +98,7 @@ export async function PUT(
         openToRemote: openToRemote ?? true,
         openToContract: openToContract ?? true,
       },
+      include: { user: true },
     });
     return NextResponse.json(updated);
   } catch (error) {

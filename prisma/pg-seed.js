@@ -1,6 +1,6 @@
-require('dotenv').config();
-const { Client } = require('pg');
-const bcrypt = require('bcryptjs');
+require("dotenv").config();
+const { Client } = require("pg");
+const bcrypt = require("bcryptjs");
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,
@@ -9,21 +9,24 @@ const client = new Client({
 async function main() {
   try {
     await client.connect();
-    console.log('✅ Connected to PostgreSQL!');
+    console.log("✅ Connected to PostgreSQL!");
 
-    const hashedPassword = await bcrypt.hash('password1234', 10);
+    const hashedPassword = await bcrypt.hash("password1234", 10);
 
     // Delete all users (cascade to related tables)
-    await client.query('DELETE FROM users');
-    console.log('🗑️  Deleted all users and related data.');
+    await client.query("DELETE FROM users");
+    console.log("🗑️  Deleted all users and related data.");
 
     // Realistic employers
-    await client.query(`
+    await client.query(
+      `
       INSERT INTO users (id, email, password, name, role, "createdAt", "updatedAt") VALUES
         ('employer-1', 'susan@innovatek.com', $1, 'Susan Lee', 'EMPLOYER', NOW(), NOW()),
         ('employer-2', 'david@medigen.com', $1, 'David Kim', 'EMPLOYER', NOW(), NOW())
       ON CONFLICT (id) DO NOTHING;
-    `, [hashedPassword]);
+    `,
+      [hashedPassword],
+    );
     await client.query(`
       INSERT INTO employer_profiles (id, "userId", "companyName", industry, size, location, description, culture, benefits, "techStack", "remotePolicy", "isHiring", "website", linkedin, "createdAt", "updatedAt") VALUES
         ('emp-profile-1', 'employer-1', 'Innovatek', 'Technology', '201-500', 'San Francisco, CA', 'Building the future of AI-driven SaaS.', 'Fast-paced, collaborative, and innovative.', '{"Health insurance","401k","Remote work"}', '{"React","Node.js","AWS"}', 'hybrid', true, 'https://innovatek.com', 'https://linkedin.com/company/innovatek', NOW(), NOW()),
@@ -34,142 +37,147 @@ async function main() {
     // Realistic talents
     const talents = [
       {
-        id: 'talent-1',
-        email: 'jane.doe@gmail.com',
-        name: 'Jane Doe',
-        title: 'Senior Frontend Engineer',
-        location: 'Remote',
+        id: "talent-1",
+        email: "jane.doe@gmail.com",
+        name: "Jane Doe",
+        title: "Senior Frontend Engineer",
+        location: "Remote",
         skills: '{"React","TypeScript","GraphQL"}',
-        experience: '6-8',
+        experience: "6-8",
         rate: 120,
         openToContract: true,
         rating: 4.8,
         reviewCount: 22,
-        bio: 'Frontend specialist with 8+ years building scalable web apps.',
-        portfolio: 'https://janedoe.dev',
-        linkedin: 'https://linkedin.com/in/janedoe',
-        github: 'https://github.com/janedoe',
-        website: 'https://janedoe.dev',
+        bio: "Frontend specialist with 8+ years building scalable web apps.",
+        portfolio: "https://janedoe.dev",
+        linkedin: "https://linkedin.com/in/janedoe",
+        github: "https://github.com/janedoe",
+        website: "https://janedoe.dev",
       },
       {
-        id: 'talent-2',
-        email: 'michael.smith@gmail.com',
-        name: 'Michael Smith',
-        title: 'Backend Developer',
-        location: 'Austin, TX',
+        id: "talent-2",
+        email: "michael.smith@gmail.com",
+        name: "Michael Smith",
+        title: "Backend Developer",
+        location: "Austin, TX",
         skills: '{"Node.js","PostgreSQL","API Design"}',
-        experience: '6-8',
+        experience: "6-8",
         rate: 110,
         openToContract: false,
         rating: 4.6,
         reviewCount: 18,
-        bio: 'API and database expert with a passion for scalable systems.',
-        portfolio: 'https://michaelsmith.dev',
-        linkedin: 'https://linkedin.com/in/michaelsmith',
-        github: 'https://github.com/michaelsmith',
-        website: 'https://michaelsmith.dev',
+        bio: "API and database expert with a passion for scalable systems.",
+        portfolio: "https://michaelsmith.dev",
+        linkedin: "https://linkedin.com/in/michaelsmith",
+        github: "https://github.com/michaelsmith",
+        website: "https://michaelsmith.dev",
       },
       {
-        id: 'talent-3',
-        email: 'emily.chen@gmail.com',
-        name: 'Emily Chen',
-        title: 'Full Stack Developer',
-        location: 'Seattle, WA',
+        id: "talent-3",
+        email: "emily.chen@gmail.com",
+        name: "Emily Chen",
+        title: "Full Stack Developer",
+        location: "Seattle, WA",
         skills: '{"React","Node.js","AWS"}',
-        experience: '4-5',
+        experience: "4-5",
         rate: 105,
         openToContract: true,
         rating: 4.7,
         reviewCount: 15,
-        bio: 'Full stack engineer with a love for cloud infrastructure.',
-        portfolio: 'https://emilychen.dev',
-        linkedin: 'https://linkedin.com/in/emilychen',
-        github: 'https://github.com/emilychen',
-        website: 'https://emilychen.dev',
+        bio: "Full stack engineer with a love for cloud infrastructure.",
+        portfolio: "https://emilychen.dev",
+        linkedin: "https://linkedin.com/in/emilychen",
+        github: "https://github.com/emilychen",
+        website: "https://emilychen.dev",
       },
       {
-        id: 'talent-4',
-        email: 'daniel.jones@gmail.com',
-        name: 'Daniel Jones',
-        title: 'DevOps Engineer',
-        location: 'Denver, CO',
+        id: "talent-4",
+        email: "daniel.jones@gmail.com",
+        name: "Daniel Jones",
+        title: "DevOps Engineer",
+        location: "Denver, CO",
         skills: '{"Docker","Kubernetes","CI/CD"}',
-        experience: '6-8',
+        experience: "6-8",
         rate: 115,
         openToContract: false,
         rating: 4.5,
         reviewCount: 12,
-        bio: 'DevOps and automation enthusiast with 7 years of experience.',
-        portfolio: 'https://danieljones.dev',
-        linkedin: 'https://linkedin.com/in/danieljones',
-        github: 'https://github.com/danieljones',
-        website: 'https://danieljones.dev',
+        bio: "DevOps and automation enthusiast with 7 years of experience.",
+        portfolio: "https://danieljones.dev",
+        linkedin: "https://linkedin.com/in/danieljones",
+        github: "https://github.com/danieljones",
+        website: "https://danieljones.dev",
       },
       {
-        id: 'talent-5',
-        email: 'sophia.wilson@gmail.com',
-        name: 'Sophia Wilson',
-        title: 'UI/UX Designer',
-        location: 'Remote',
+        id: "talent-5",
+        email: "sophia.wilson@gmail.com",
+        name: "Sophia Wilson",
+        title: "UI/UX Designer",
+        location: "Remote",
         skills: '{"Figma","Sketch","User Research"}',
-        experience: '4-5',
+        experience: "4-5",
         rate: 100,
         openToContract: true,
         rating: 4.9,
         reviewCount: 25,
-        bio: 'Award-winning designer focused on delightful user experiences.',
-        portfolio: 'https://sophiawilson.design',
-        linkedin: 'https://linkedin.com/in/sophiawilson',
-        github: 'https://github.com/sophiawilson',
-        website: 'https://sophiawilson.design',
+        bio: "Award-winning designer focused on delightful user experiences.",
+        portfolio: "https://sophiawilson.design",
+        linkedin: "https://linkedin.com/in/sophiawilson",
+        github: "https://github.com/sophiawilson",
+        website: "https://sophiawilson.design",
       },
       {
-        id: 'talent-6',
-        email: 'alex.martin@gmail.com',
-        name: 'Alex Martin',
-        title: 'Mobile App Developer',
-        location: 'Chicago, IL',
+        id: "talent-6",
+        email: "alex.martin@gmail.com",
+        name: "Alex Martin",
+        title: "Mobile App Developer",
+        location: "Chicago, IL",
         skills: '{"React Native","Swift","Kotlin"}',
-        experience: '2-3',
+        experience: "2-3",
         rate: 95,
         openToContract: false,
         rating: 4.4,
         reviewCount: 8,
-        bio: 'Mobile developer with cross-platform expertise.',
-        portfolio: 'https://alexmartin.dev',
-        linkedin: 'https://linkedin.com/in/alexmartin',
-        github: 'https://github.com/alexmartin',
-        website: 'https://alexmartin.dev',
+        bio: "Mobile developer with cross-platform expertise.",
+        portfolio: "https://alexmartin.dev",
+        linkedin: "https://linkedin.com/in/alexmartin",
+        github: "https://github.com/alexmartin",
+        website: "https://alexmartin.dev",
       },
     ];
     for (const t of talents) {
-      await client.query(`
+      await client.query(
+        `
         INSERT INTO users (id, email, password, name, role, "createdAt", "updatedAt") VALUES
           ($1, $2, $4, $3, 'TALENT', NOW(), NOW())
         ON CONFLICT (id) DO NOTHING;
-      `, [t.id, t.email, t.name, hashedPassword]);
-      await client.query(`
-        INSERT INTO talent_profiles (id, "userId", name, title, location, skills, experience, rate, availability, bio, portfolio, linkedin, github, website, "openToRemote", "openToContract", rating, "reviewCount", "createdAt", "updatedAt") VALUES
-          ($1, $2, $3, $4, $5, $6, $7, $8, 'full-time', $9, $10, $11, $12, $13, true, $14, $15, $16, NOW(), NOW())
+      `,
+        [t.id, t.email, t.name, hashedPassword],
+      );
+      await client.query(
+        `
+        INSERT INTO talent_profiles (id, "userId", title, location, skills, experience, rate, availability, bio, portfolio, linkedin, github, website, "openToRemote", "openToContract", rating, "reviewCount", "createdAt", "updatedAt") VALUES
+          ($1, $2, $3, $4, $5, $6, $7, 'full-time', $8, $9, $10, $11, $12, true, $13, $14, $15, NOW(), NOW())
         ON CONFLICT (id) DO NOTHING;
-      `, [
-        `talent-profile-${t.id}`,
-        t.id,
-        t.name,
-        t.title,
-        t.location,
-        t.skills,
-        t.experience,
-        t.rate,
-        t.bio,
-        t.portfolio,
-        t.linkedin,
-        t.github,
-        t.website,
-        t.openToContract,
-        t.rating,
-        t.reviewCount
-      ]);
+      `,
+        [
+          `talent-profile-${t.id}`,
+          t.id,
+          t.title,
+          t.location,
+          t.skills,
+          t.experience,
+          t.rate,
+          t.bio,
+          t.portfolio,
+          t.linkedin,
+          t.github,
+          t.website,
+          t.openToContract,
+          t.rating,
+          t.reviewCount,
+        ],
+      );
     }
 
     // Proposals
@@ -180,12 +188,12 @@ async function main() {
       ON CONFLICT (id) DO NOTHING;
     `);
 
-    console.log('✅ Seeded realistic employers, talents, and proposals!');
+    console.log("✅ Seeded realistic employers, talents, and proposals!");
   } catch (err) {
-    console.error('❌ Error during seeding:', err);
+    console.error("❌ Error during seeding:", err);
   } finally {
     await client.end();
-    console.log('Connection closed.');
+    console.log("Connection closed.");
   }
 }
 

@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,15 +21,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export default async function HomePage() {
-  let featuredTalent: Awaited<
-    ReturnType<typeof prisma.talentProfile.findMany>
-  > = [];
+  let featuredTalent: Prisma.TalentProfileGetPayload<{
+    include: { user: true };
+  }>[] = [];
   try {
     featuredTalent = await prisma.talentProfile.findMany({
       take: 3,
       orderBy: { rating: "desc" },
+      include: { user: true },
     });
   } catch (err) {
     console.error("Failed to load featured talent:", err);
@@ -38,9 +39,6 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Navbar />
-
       {/* Hero Section */}
       <section className="relative py-24 md:py-32 px-4 hero-grid overflow-hidden">
         {/* Subtle gradient orb */}
@@ -123,7 +121,9 @@ export default async function HomePage() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-lg">{talent.name}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {talent.user?.name}
+                      </CardTitle>
                       <CardDescription className="text-base">
                         {talent.title}
                       </CardDescription>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   companiesApi,
@@ -132,9 +131,6 @@ export default function EmployerDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <Navbar />
-
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="mb-8">
@@ -460,10 +456,10 @@ export default function EmployerDashboard() {
                         <div className="flex items-start gap-4">
                           <Avatar className="h-12 w-12">
                             <AvatarImage
-                              src={`/abstract-geometric-shapes.png?height=48&width=48&query=${talent.name} headshot`}
+                              src={`/abstract-geometric-shapes.png?height=48&width=48&query=${talent.user?.name} headshot`}
                             />
                             <AvatarFallback>
-                              {talent.name
+                              {(talent.user?.name ?? "")
                                 .split(" ")
                                 .map((n: string) => n[0])
                                 .join("")}
@@ -471,7 +467,7 @@ export default function EmployerDashboard() {
                           </Avatar>
                           <div className="flex-1 min-w-0">
                             <CardTitle className="text-lg truncate">
-                              {talent.name}
+                              {talent.user?.name}
                             </CardTitle>
                             <CardDescription>{talent.title}</CardDescription>
                             <div className="flex items-center gap-1 mt-1">

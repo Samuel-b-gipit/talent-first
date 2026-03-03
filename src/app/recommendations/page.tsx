@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast, Toaster } from "sonner";
 import {
@@ -77,12 +76,16 @@ export default function RecommendationsPage() {
     if (error) {
       setSavedTalentIds((prev) => prev.filter((id) => id !== talentProfileId));
       if (error.includes("already saved")) {
-        toast.info("Already saved", { description: `${talentName ?? "This talent"} is already in your saved list.` });
+        toast.info("Already saved", {
+          description: `${talentName ?? "This talent"} is already in your saved list.`,
+        });
       } else {
         toast.error("Failed to save talent", { description: error });
       }
     } else {
-      toast.success("Talent saved!", { description: `${talentName ?? "Talent"} has been added to your saved list.` });
+      toast.success("Talent saved!", {
+        description: `${talentName ?? "Talent"} has been added to your saved list.`,
+      });
     }
   };
 
@@ -92,8 +95,6 @@ export default function RecommendationsPage() {
   return (
     <div className="min-h-screen bg-background">
       <Toaster position="top-right" richColors />
-      {/* Header */}
-      <Navbar />
 
       <div className="container mx-auto px-6 py-10">
         {/* Page Header */}
@@ -173,7 +174,7 @@ export default function RecommendationsPage() {
                             <Avatar className="h-16 w-16">
                               <AvatarImage src="/professional-headshot.png" />
                               <AvatarFallback className="text-xl">
-                                {talent.name
+                                {(talent.user?.name ?? "")
                                   .split(" ")
                                   .map((n) => n[0])
                                   .join("")}
@@ -184,7 +185,7 @@ export default function RecommendationsPage() {
                               <div className="flex items-start justify-between mb-3">
                                 <div>
                                   <h3 className="font-semibold text-lg">
-                                    {talent.name}
+                                    {talent.user?.name}
                                   </h3>
                                   <p className="text-muted-foreground">
                                     {talent.title}
@@ -245,7 +246,12 @@ export default function RecommendationsPage() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => saveTalent(talent.id, talent.name)}
+                                  onClick={() =>
+                                    saveTalent(
+                                      talent.id,
+                                      talent.user?.name ?? "",
+                                    )
+                                  }
                                   disabled={savedTalentIds.includes(talent.id)}
                                 >
                                   <BookmarkPlus className="h-4 w-4" />
@@ -286,7 +292,7 @@ export default function RecommendationsPage() {
                             <Avatar className="h-12 w-12">
                               <AvatarImage src="/professional-headshot.png" />
                               <AvatarFallback>
-                                {talent.name
+                                {(talent.user?.name ?? "")
                                   .split(" ")
                                   .map((n) => n[0])
                                   .join("")}
@@ -297,7 +303,7 @@ export default function RecommendationsPage() {
                               <div className="flex items-start justify-between mb-2">
                                 <div>
                                   <h3 className="font-semibold">
-                                    {talent.name}
+                                    {talent.user?.name}
                                   </h3>
                                   <p className="text-muted-foreground">
                                     {talent.title}
@@ -397,7 +403,7 @@ export default function RecommendationsPage() {
                             <Avatar className="h-12 w-12">
                               <AvatarImage src="/professional-headshot.png" />
                               <AvatarFallback>
-                                {talent.name
+                                {(talent.user?.name ?? "")
                                   .split(" ")
                                   .map((n) => n[0])
                                   .join("")}
@@ -408,7 +414,7 @@ export default function RecommendationsPage() {
                               <div className="flex items-start justify-between mb-2">
                                 <div>
                                   <h3 className="font-semibold">
-                                    {talent.name}
+                                    {talent.user?.name}
                                   </h3>
                                   <p className="text-muted-foreground">
                                     {talent.title}
