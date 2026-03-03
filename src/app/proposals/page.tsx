@@ -135,6 +135,10 @@ export default function ProposalsPage() {
   const acceptedProposals = proposals.filter((p) => p.status === "accepted");
   const declinedProposals = proposals.filter((p) => p.status === "declined");
   const respondedProposals = [...acceptedProposals, ...declinedProposals];
+  const responseRate =
+    proposals.length === 0
+      ? 0
+      : Math.round((respondedProposals.length / proposals.length) * 100);
 
   return (
     <div className="min-h-screen bg-background">
@@ -191,7 +195,7 @@ export default function ProposalsPage() {
                   <p className="text-sm font-medium text-muted-foreground">
                     Response Rate
                   </p>
-                  <p className="text-2xl font-bold">85%</p>
+                  <p className="text-2xl font-bold">{responseRate}%</p>
                 </div>
                 <MessageSquare className="h-8 w-8 text-emerald-500/60" />
               </div>

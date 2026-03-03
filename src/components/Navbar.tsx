@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import React from "react";
 import Link from "next/link";
@@ -31,12 +31,20 @@ export function Navbar() {
     displayName = companyName;
   }
 
+  // Link directly to the role's home page instead of "/" to avoid the
+  // Next.js App Router caching the middleware redirect from a previous session.
+  const roleHomeMap: Record<string, string> = {
+    EMPLOYER: "/employer/dashboard",
+    TALENT: "/proposals",
+  };
+  const logoHref = (user?.role && roleHomeMap[user.role]) || "/";
+
   return (
     <header className="sticky top-0 z-50 border-b border-border/40 glass">
       <div className="container mx-auto px-6 py-3">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
+          <Link href={logoHref} className="flex items-center gap-2.5 group">
             <div className="min-w-[2.25rem] px-3 h-9 bg-primary rounded-xl flex items-center justify-center shadow-[0_2px_8px_rgba(79,70,229,0.25)] group-hover:shadow-[0_2px_12px_rgba(79,70,229,0.35)] transition-shadow duration-200">
               <span className="text-primary-foreground font-bold text-sm whitespace-nowrap">
                 {logoText}
