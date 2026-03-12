@@ -27,6 +27,26 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [demoLoading, setDemoLoading] = useState<"TALENT" | "EMPLOYER" | null>(
+    null,
+  );
+
+  const fillDemo = async (role: "TALENT" | "EMPLOYER") => {
+    setDemoLoading(role);
+    try {
+      const res = await fetch(`/api/auth/demo?role=${role}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to load demo account");
+      setEmail(data.email);
+      setPassword(data.password);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load demo account",
+      );
+    } finally {
+      setDemoLoading(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,6 +158,29 @@ export default function LoginPage() {
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? "Signing in..." : "Sign In"}
                 </Button>
+
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-emerald-500 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:border-emerald-600 dark:text-emerald-400 dark:hover:bg-emerald-950"
+                    disabled={demoLoading !== null}
+                    onClick={() => fillDemo("TALENT")}
+                  >
+                    {demoLoading === "TALENT" ? "Loading..." : "Demo as Talent"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full border-amber-500 text-amber-600 hover:bg-amber-50 hover:text-amber-700 dark:border-amber-600 dark:text-amber-400 dark:hover:bg-amber-950"
+                    disabled={demoLoading !== null}
+                    onClick={() => fillDemo("EMPLOYER")}
+                  >
+                    {demoLoading === "EMPLOYER"
+                      ? "Loading..."
+                      : "Demo as Employer"}
+                  </Button>
+                </div>
               </form>
 
               <div className="mt-6">

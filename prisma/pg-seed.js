@@ -100,6 +100,8 @@ const firstNames = [
   "Skylar",
   "Zachary",
   "Paisley",
+  "Zachary",
+  "Paisley",
   "Grayson",
   "Naomi",
   "Cole",
@@ -467,10 +469,10 @@ async function main() {
   await client.query("ALTER TABLE talent_profiles DROP COLUMN IF EXISTS name");
   console.log("🗑️  Cleared all tables.");
 
-  // ── Seed 10 employers ──────────────────────────────────────────────────────
+  // ── Seed 3 employers ───────────────────────────────────────────────────────
   const employerIds = [];
 
-  for (let i = 0; i < companyData.length; i++) {
+  for (let i = 0; i < 3; i++) {
     const c = companyData[i];
     const uid = randomUUID();
     const pid = randomUUID();
@@ -509,10 +511,11 @@ async function main() {
   }
   console.log(`✅ Seeded ${employerIds.length} employers.`);
 
-  // ── Seed 100 talents + proposals ───────────────────────────────────────────
+  // ── Seed 20 talents + proposals ────────────────────────────────────────────
   let totalProposals = 0;
+  const talentProfileIds = []; // [{ userId, profileId }]
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 20; i++) {
     const fn = pickAt(firstNames, i);
     const ln = pickAt(lastNames, i + 13); // offset to vary name combos
     const uid = randomUUID();
@@ -557,8 +560,10 @@ async function main() {
       ],
     );
 
-    // 2-4 proposals per talent; the last one is always PENDING
-    const numProposals = 2 + (i % 3); // cycles 2, 3, 4, 2, 3, 4 …
+    talentProfileIds.push({ userId: uid, profileId: pid });
+
+    // 2-3 proposals per talent; the last one is always PENDING
+    const numProposals = 2 + (i % 2); // cycles 2, 3, 2, 3 …
     const earlierStatuses = ["VIEWED", "ACCEPTED", "DECLINED"];
     const usedEmployerIdx = new Set();
 
@@ -607,7 +612,46 @@ async function main() {
     }
   }
 
-  console.log(`✅ Seeded 100 talents and ${totalProposals} proposals.`);
+  console.log(`✅ Seeded 20 talents and ${totalProposals} proposals.`);
+
+  // ── Seed saved_talents (each employer bookmarks ~5 talents) ────────────────
+  let totalSaved = 0;
+  const savedNotes = [
+    "Strong React skills, worth following up.",
+    "Great portfolio — potential senior hire.",
+    "Fits our tech stack well.",
+    "Strong communicator, available immediately.",
+    "Impressive open-source contributions.",
+    "Referred by a team member.",
+    "Top candidate for backend role.",
+  ];
+
+  for (let ei = 0; ei < employerIds.length; ei++) {
+    // Each employer saves a different slice of 5-7 talent profiles
+    const start = (ei * 6) % talentProfileIds.length;
+    const count = 5 + (ei % 3); // 5, 6, or 7
+    for (let k = 0; k < count; k++) {
+      const tp = talentProfileIds[(start + k) % talentProfileIds.length];
+      try {
+        await client.query(
+          `INSERT INTO saved_talents (id, "employerId", "talentId", notes, "savedDate")
+           VALUES ($1, $2, $3, $4, NOW() - ($5 || ' days')::interval)`,
+          [
+            randomUUID(),
+            employerIds[ei],
+            tp.profileId,
+            pick(savedNotes),
+            randInt(0, 30),
+          ],
+        );
+        totalSaved++;
+      } catch {
+        // skip duplicate (employerId, talentId) pairs silently
+      }
+    }
+  }
+
+  console.log(`✅ Seeded ${totalSaved} saved_talent entries.`);
   await client.end();
   console.log("Connection closed.");
 }
