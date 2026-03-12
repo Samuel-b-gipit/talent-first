@@ -19,6 +19,12 @@ export async function GET(req: NextRequest) {
   const id = employerId || user.id;
   // Fetch employer profile, saved talents, proposals, and recommend talents (simple version)
   try {
+    const page = Math.max(1, Number(searchParams.get("page") ?? 1));
+    const pageSize = Math.min(
+      50,
+      Math.max(1, Number(searchParams.get("pageSize") ?? 10)),
+    );
+
     // Get all talents not already saved or proposed to
     const saved = await prisma.savedTalent.findMany({
       where: { employerId: id },
@@ -30,15 +36,18 @@ export async function GET(req: NextRequest) {
       ...saved.map((s) => s.talentId),
       ...proposals.map((p) => p.talentId),
     ];
-    const recommended = await prisma.talentProfile.findMany({
-      where: {
-        id: { notIn: contactedTalentIds },
-      },
-      take: 20,
-      orderBy: { rating: "desc" },
-      include: { user: true },
-    });
-    return NextResponse.json(recommended);
+    const where = { id: { notIn: contactedTalentIds } };
+    const [total, items] = await Promise.all([
+      prisma.talentProfile.count({ where }),
+      prisma.talentProfile.findMany({
+        where,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { rating: "desc" },
+        include: { user: true },
+      }),
+    ]);
+    return NextResponse.json({ items, total });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch recommendations", details: error },

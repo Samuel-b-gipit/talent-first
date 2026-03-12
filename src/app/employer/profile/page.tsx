@@ -57,6 +57,7 @@ export default function CompanyProfilePage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [logoPreview, setLogoPreview] = useState("");
+  const [pendingLogoFile, setPendingLogoFile] = useState<File | null>(null);
 
   // Load existing profile
   useEffect(() => {
@@ -92,6 +93,33 @@ export default function CompanyProfilePage() {
     setError("");
     setSuccess("");
 
+    let finalLogo = formData.logo;
+    if (pendingLogoFile) {
+      try {
+        const form = new FormData();
+        form.append("file", pendingLogoFile);
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: form,
+          credentials: "include",
+        });
+        const json = await res.json();
+        if (json.url) {
+          finalLogo = json.url;
+          setFormData((prev) => ({ ...prev, logo: json.url }));
+          setPendingLogoFile(null);
+        } else {
+          setError("Logo upload failed. Please try again.");
+          setIsLoading(false);
+          return;
+        }
+      } catch {
+        setError("Logo upload failed. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
     const payload = {
       companyName: formData.companyName,
       industry: formData.industry || undefined,
@@ -107,7 +135,7 @@ export default function CompanyProfilePage() {
       foundedYear: formData.foundedYear || undefined,
       linkedin: formData.linkedin || undefined,
       twitter: formData.twitter || undefined,
-      logo: formData.logo || undefined,
+      logo: finalLogo || undefined,
     };
 
     const { error: apiError } = profileId
@@ -156,19 +184,11 @@ export default function CompanyProfilePage() {
     }));
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPendingLogoFile(file);
     setLogoPreview(URL.createObjectURL(file));
-    const form = new FormData();
-    form.append("file", file);
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: form,
-      credentials: "include",
-    });
-    const json = await res.json();
-    if (json.url) setFormData((prev) => ({ ...prev, logo: json.url }));
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -218,7 +238,7 @@ export default function CompanyProfilePage() {
                     }
                   >
                     <Camera className="h-4 w-4" />
-                    Upload Logo
+                    {pendingLogoFile ? "Change Logo" : "Upload Logo"}
                   </Button>
                   <input
                     id="logo-upload"

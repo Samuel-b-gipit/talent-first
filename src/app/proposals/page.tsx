@@ -18,6 +18,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -25,7 +30,6 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Eye,
   MessageSquare,
   DollarSign,
   MapPin,
@@ -53,6 +57,10 @@ export default function ProposalsPage() {
     useState<NormalizedProposal | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
+  const [confirmingAction, setConfirmingAction] = useState<{
+    proposalId: string;
+    action: "accept" | "decline";
+  } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -85,9 +93,8 @@ export default function ProposalsPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "pending":
-        return <Clock className="h-4 w-4 text-secondary" />;
       case "viewed":
-        return <Eye className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-4 w-4 text-orange-500" />;
       case "accepted":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "declined":
@@ -97,19 +104,27 @@ export default function ProposalsPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (_status: string): "secondary" => {
+    return "secondary";
+  };
+
+  const getStatusClassName = (status: string) => {
     switch (status) {
       case "pending":
-        return "secondary";
       case "viewed":
-        return "default";
+        return "bg-orange-100 text-orange-700 border-orange-300 hover:bg-orange-100";
       case "accepted":
-        return "success";
+        return "bg-green-500 hover:bg-green-600 text-white border-green-500";
       case "declined":
-        return "destructive";
+        return "bg-red-100 text-red-700 border-red-300 hover:bg-red-100";
       default:
-        return "secondary";
+        return "";
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    if (status === "viewed") return "pending";
+    return status;
   };
 
   const handleResponse = async (
@@ -131,7 +146,9 @@ export default function ProposalsPage() {
     setResponseMessage("");
   };
 
-  const pendingProposals = proposals.filter((p) => p.status === "pending");
+  const pendingProposals = proposals.filter(
+    (p) => p.status === "pending" || p.status === "viewed",
+  );
   const acceptedProposals = proposals.filter((p) => p.status === "accepted");
   const declinedProposals = proposals.filter((p) => p.status === "declined");
   const respondedProposals = [...acceptedProposals, ...declinedProposals];
@@ -280,8 +297,11 @@ export default function ProposalsPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             {getStatusIcon(proposal.status)}
-                            <Badge variant={getStatusColor(proposal.status)}>
-                              {proposal.status}
+                            <Badge
+                              variant={getStatusColor(proposal.status)}
+                              className={getStatusClassName(proposal.status)}
+                            >
+                              {getStatusLabel(proposal.status)}
                             </Badge>
                           </div>
                         </div>
@@ -340,6 +360,11 @@ export default function ProposalsPage() {
                                   onClick={() => {
                                     setSelectedProposal(proposal);
                                     setIsDetailOpen(true);
+                                    if (proposal.status === "pending") {
+                                      proposalsApi.update(proposal.id, {
+                                        status: "VIEWED",
+                                      });
+                                    }
                                   }}
                                 >
                                   View Details
@@ -487,7 +512,8 @@ export default function ProposalsPage() {
                                     </div>
 
                                     {/* Response Section */}
-                                    {selectedProposal.status === "pending" && (
+                                    {(selectedProposal.status === "pending" ||
+                                      selectedProposal.status === "viewed") && (
                                       <>
                                         <Separator />
                                         <div>
@@ -540,29 +566,127 @@ export default function ProposalsPage() {
                               </DialogContent>
                             </Dialog>
 
-                            {proposal.status === "pending" && (
+                            {(proposal.status === "pending" ||
+                              proposal.status === "viewed") && (
                               <>
-                                <Button
-                                  size="sm"
-                                  onClick={() => {
-                                    setSelectedProposal(proposal);
-                                    handleResponse(proposal.id, "accept");
+                                <Popover
+                                  open={
+                                    confirmingAction?.proposalId ===
+                                      proposal.id &&
+                                    confirmingAction?.action === "accept"
+                                  }
+                                  onOpenChange={(open) => {
+                                    if (!open) setConfirmingAction(null);
                                   }}
                                 >
-                                  <CheckCircle className="mr-2 h-4 w-4" />
-                                  Accept
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setSelectedProposal(proposal);
-                                    handleResponse(proposal.id, "decline");
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        setConfirmingAction({
+                                          proposalId: proposal.id,
+                                          action: "accept",
+                                        })
+                                      }
+                                    >
+                                      <CheckCircle className="mr-2 h-4 w-4" />
+                                      Accept
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent
+                                    className="w-56 p-3"
+                                    align="center"
+                                    side="top"
+                                  >
+                                    <p className="text-sm font-medium mb-3">
+                                      Accept this proposal?
+                                    </p>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        className="flex-1"
+                                        onClick={() => {
+                                          handleResponse(proposal.id, "accept");
+                                          setConfirmingAction(null);
+                                        }}
+                                      >
+                                        Confirm
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() =>
+                                          setConfirmingAction(null)
+                                        }
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
+
+                                <Popover
+                                  open={
+                                    confirmingAction?.proposalId ===
+                                      proposal.id &&
+                                    confirmingAction?.action === "decline"
+                                  }
+                                  onOpenChange={(open) => {
+                                    if (!open) setConfirmingAction(null);
                                   }}
                                 >
-                                  <XCircle className="mr-2 h-4 w-4" />
-                                  Decline
-                                </Button>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() =>
+                                        setConfirmingAction({
+                                          proposalId: proposal.id,
+                                          action: "decline",
+                                        })
+                                      }
+                                    >
+                                      <XCircle className="mr-2 h-4 w-4" />
+                                      Decline
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent
+                                    className="w-56 p-3"
+                                    align="center"
+                                    side="top"
+                                  >
+                                    <p className="text-sm font-medium mb-3">
+                                      Decline this proposal?
+                                    </p>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        className="flex-1"
+                                        onClick={() => {
+                                          handleResponse(
+                                            proposal.id,
+                                            "decline",
+                                          );
+                                          setConfirmingAction(null);
+                                        }}
+                                      >
+                                        Confirm
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() =>
+                                          setConfirmingAction(null)
+                                        }
+                                      >
+                                        Cancel
+                                      </Button>
+                                    </div>
+                                  </PopoverContent>
+                                </Popover>
                               </>
                             )}
                           </div>
@@ -705,14 +829,13 @@ export default function ProposalsPage() {
                           <div className="flex items-center gap-2">
                             {getStatusIcon(proposal.status)}
                             <Badge
-                              variant={
-                                proposal.status === "accepted"
-                                  ? "success"
-                                  : "destructive"
-                              }
+                              variant="secondary"
+                              className={getStatusClassName(proposal.status)}
                             >
-                              {proposal.status.charAt(0).toUpperCase() +
-                                proposal.status.slice(1)}
+                              {getStatusLabel(proposal.status)
+                                .charAt(0)
+                                .toUpperCase() +
+                                getStatusLabel(proposal.status).slice(1)}
                             </Badge>
                           </div>
                         </div>
@@ -770,6 +893,11 @@ export default function ProposalsPage() {
                                 onClick={() => {
                                   setSelectedProposal(proposal);
                                   setIsDetailOpen(true);
+                                  if (proposal.status === "pending") {
+                                    proposalsApi.update(proposal.id, {
+                                      status: "VIEWED",
+                                    });
+                                  }
                                 }}
                               >
                                 View Details
@@ -920,7 +1048,7 @@ export default function ProposalsPage() {
                                   <div className="flex items-center gap-2">
                                     {getStatusIcon(selectedProposal.status)}
                                     <span className="font-medium capitalize">
-                                      {selectedProposal.status}
+                                      {getStatusLabel(selectedProposal.status)}
                                     </span>
                                   </div>
                                 </div>

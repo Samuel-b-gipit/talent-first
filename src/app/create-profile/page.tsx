@@ -56,6 +56,7 @@ export default function CreateProfilePage() {
   const [error, setError] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
 
   // Prefill form if the user already has a talent profile
   useEffect(() => {
@@ -85,19 +86,11 @@ export default function CreateProfilePage() {
     });
   }, [user]);
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPendingAvatarFile(file);
     setAvatarPreview(URL.createObjectURL(file));
-    const form = new FormData();
-    form.append("file", file);
-    const res = await fetch("/api/upload", {
-      method: "POST",
-      body: form,
-      credentials: "include",
-    });
-    const json = await res.json();
-    if (json.url) setAvatarUrl(json.url);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,8 +104,35 @@ export default function CreateProfilePage() {
       return;
     }
 
+    let finalAvatarUrl = avatarUrl;
+    if (pendingAvatarFile) {
+      try {
+        const form = new FormData();
+        form.append("file", pendingAvatarFile);
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: form,
+          credentials: "include",
+        });
+        const json = await res.json();
+        if (json.url) {
+          finalAvatarUrl = json.url;
+          setAvatarUrl(json.url);
+          setPendingAvatarFile(null);
+        } else {
+          setError("Image upload failed. Please try again.");
+          setIsLoading(false);
+          return;
+        }
+      } catch {
+        setError("Image upload failed. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
     const payload = {
-      avatarUrl: avatarUrl || null,
+      avatarUrl: finalAvatarUrl || null,
       title: formData.title,
       bio: formData.bio,
       location: formData.location,
@@ -218,7 +238,7 @@ export default function CreateProfilePage() {
                       }
                     >
                       <Camera className="h-4 w-4" />
-                      Upload Photo
+                      {pendingAvatarFile ? "Change Photo" : "Upload Photo"}
                     </Button>
                     <input
                       id="avatar-upload"

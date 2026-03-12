@@ -37,20 +37,63 @@ import Link from "next/link";
 
 export default function BrowseTalentPage() {
   const { user } = useAuth();
-  const [talents, setTalents] = useState<TalentProfile[]>([]);
+  const [items, setItems] = useState<TalentProfile[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSkill, setSelectedSkill] = useState("allSkills");
   const [selectedLocation, setSelectedLocation] = useState("allLocations");
   const [selectedExperience, setSelectedExperience] = useState("allExperience");
   const [savedTalentIds, setSavedTalentIds] = useState<string[]>([]);
 
+  // Reset + fetch page 1 whenever filters change
   useEffect(() => {
-    talentsApi.getAll().then(({ data }) => {
-      if (data) setTalents(data);
+    let cancelled = false;
+    setIsLoading(true);
+    setPage(1);
+    const params: Parameters<typeof talentsApi.getAll>[0] = {
+      page: 1,
+      pageSize: 12,
+    };
+    if (searchQuery) params.q = searchQuery;
+    if (selectedSkill !== "allSkills") params.skills = selectedSkill;
+    if (selectedLocation !== "allLocations") params.location = selectedLocation;
+    if (selectedExperience !== "allExperience")
+      params.experience = selectedExperience;
+    talentsApi.getAll(params).then(({ data }) => {
+      if (cancelled) return;
+      setItems(data?.items ?? []);
+      setTotal(data?.total ?? 0);
       setIsLoading(false);
     });
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [searchQuery, selectedSkill, selectedLocation, selectedExperience]);
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    setIsFetchingMore(true);
+    const params: Parameters<typeof talentsApi.getAll>[0] = {
+      page: nextPage,
+      pageSize: 12,
+    };
+    if (searchQuery) params.q = searchQuery;
+    if (selectedSkill !== "allSkills") params.skills = selectedSkill;
+    if (selectedLocation !== "allLocations") params.location = selectedLocation;
+    if (selectedExperience !== "allExperience")
+      params.experience = selectedExperience;
+    talentsApi.getAll(params).then(({ data }) => {
+      if (data) {
+        setItems((prev) => [...prev, ...data.items]);
+        setTotal(data.total);
+      }
+      setIsFetchingMore(false);
+    });
+  };
 
   const handleSaveTalent = async (talentId: string, talentName: string) => {
     if (!user) {
@@ -76,34 +119,6 @@ export default function BrowseTalentPage() {
       });
     }
   };
-
-  const filteredTalent = talents.filter((talent) => {
-    const matchesSearch =
-      (talent.user?.name ?? "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      talent.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      talent.skills.some((skill) =>
-        skill.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-
-    const matchesSkill =
-      selectedSkill === "allSkills" ||
-      talent.skills.some((skill) =>
-        skill.toLowerCase().includes(selectedSkill.toLowerCase()),
-      );
-
-    const matchesLocation =
-      selectedLocation === "allLocations" ||
-      talent.location.includes(selectedLocation);
-    const matchesExperience =
-      selectedExperience === "allExperience" ||
-      talent.experience.includes(selectedExperience);
-
-    return (
-      matchesSearch && matchesSkill && matchesLocation && matchesExperience
-    );
-  });
 
   return (
     <div className="min-h-screen bg-background">
@@ -146,11 +161,11 @@ export default function BrowseTalentPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="allSkills">All Skills</SelectItem>
-                    <SelectItem value="react">React</SelectItem>
-                    <SelectItem value="node">Node.js</SelectItem>
-                    <SelectItem value="python">Python</SelectItem>
-                    <SelectItem value="design">Design</SelectItem>
-                    <SelectItem value="marketing">Marketing</SelectItem>
+                    <SelectItem value="React">React</SelectItem>
+                    <SelectItem value="Node.js">Node.js</SelectItem>
+                    <SelectItem value="Python">Python</SelectItem>
+                    <SelectItem value="Design">Design</SelectItem>
+                    <SelectItem value="Marketing">Marketing</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -186,7 +201,8 @@ export default function BrowseTalentPage() {
                     <SelectItem value="2-3">2-3 years</SelectItem>
                     <SelectItem value="4-5">4-5 years</SelectItem>
                     <SelectItem value="6-8">6-8 years</SelectItem>
-                    <SelectItem value="9+">9+ years</SelectItem>
+                    <SelectItem value="9-12">9-12 years</SelectItem>
+                    <SelectItem value="13+">13+ years</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -204,9 +220,9 @@ export default function BrowseTalentPage() {
           <p className="text-sm text-muted-foreground">
             Showing{" "}
             <span className="font-semibold text-foreground">
-              {filteredTalent.length}
+              {items.length}
             </span>{" "}
-            of {isLoading ? "..." : talents.length} professionals
+            of {isLoading ? "..." : total} professionals
           </p>
         </div>
 
@@ -236,7 +252,7 @@ export default function BrowseTalentPage() {
                 </div>
               ))}
             </>
-          ) : filteredTalent.length === 0 ? (
+          ) : items.length === 0 ? (
             <div className="col-span-3 text-center py-20">
               <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Search className="h-7 w-7 text-muted-foreground" />
@@ -247,7 +263,7 @@ export default function BrowseTalentPage() {
               </p>
             </div>
           ) : (
-            filteredTalent.map((talent) => (
+            items.map((talent) => (
               <Card key={talent.id} className="card-hover">
                 <CardHeader>
                   <div className="flex items-start gap-4">
@@ -354,16 +370,21 @@ export default function BrowseTalentPage() {
         </div>
 
         {/* Load More */}
-        {filteredTalent.length > 0 && (
+        {items.length < total && (
           <div className="text-center mt-8">
-            <Button variant="outline" size="lg">
-              Load More Talent
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleLoadMore}
+              disabled={isFetchingMore}
+            >
+              {isFetchingMore ? "Loading…" : "Load More Talent"}
             </Button>
           </div>
         )}
 
         {/* No Results */}
-        {filteredTalent.length === 0 && (
+        {!isLoading && items.length === 0 && (
           <div className="text-center py-12">
             <h3 className="text-lg font-semibold mb-2">No talent found</h3>
             <p className="text-muted-foreground mb-4">

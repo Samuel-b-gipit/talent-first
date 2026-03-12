@@ -58,7 +58,11 @@ const skillSuggestions = [
 ];
 
 export default function SearchPage() {
-  const [talents, setTalents] = useState<TalentProfile[]>([]);
+  const [items, setItems] = useState<TalentProfile[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     skills: [] as string[],
@@ -78,15 +82,58 @@ export default function SearchPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [savedSearches, setSavedSearches] = useState<string[]>([]);
 
-  // Fetch all talents from API on mount
-  useEffect(() => {
-    talentsApi.getAll().then(({ data }) => {
-      if (data) setTalents(data);
-    });
-  }, []);
-
   // Simulate search suggestions
   const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+
+  const buildParams = (pg: number): Parameters<typeof talentsApi.getAll>[0] => {
+    const p: Parameters<typeof talentsApi.getAll>[0] = {
+      page: pg,
+      pageSize: 12,
+      sortBy,
+    };
+    if (searchQuery) p.q = searchQuery;
+    if (filters.skills.length > 0) p.skills = filters.skills.join(",");
+    if (filters.location) p.location = filters.location;
+    if (filters.rateMin !== 50) p.minRate = filters.rateMin;
+    if (filters.rateMax !== 200) p.maxRate = filters.rateMax;
+    if (filters.availability !== "all") p.availability = filters.availability;
+    if (filters.remote) p.remote = true;
+    if (filters.contract) p.contract = true;
+    if (filters.rating > 0) p.minRating = filters.rating;
+    if (filters.experienceMin > 0) p.experienceMin = filters.experienceMin;
+    if (filters.experienceMax < 15) p.experienceMax = filters.experienceMax;
+    return p;
+  };
+
+  // Reset + fetch page 1 on filter/sort/search change
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    setPage(1);
+    talentsApi.getAll(buildParams(1)).then(({ data }) => {
+      if (cancelled) return;
+      setItems(data?.items ?? []);
+      setTotal(data?.total ?? 0);
+      setIsLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, filters, sortBy]);
+
+  const handleLoadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    setIsFetchingMore(true);
+    talentsApi.getAll(buildParams(nextPage)).then(({ data }) => {
+      if (data) {
+        setItems((prev) => [...prev, ...data.items]);
+        setTotal(data.total);
+      }
+      setIsFetchingMore(false);
+    });
+  };
 
   useEffect(() => {
     if (searchQuery.length > 2) {
@@ -98,92 +145,6 @@ export default function SearchPage() {
       setSearchSuggestions([]);
     }
   }, [searchQuery]);
-
-  // Advanced filtering logic
-  const filteredTalent = talents.filter((talent) => {
-    // Text search
-    const matchesSearch =
-      searchQuery === "" ||
-      (talent.user?.name ?? "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      talent.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      talent.skills.some((skill) =>
-        skill.toLowerCase().includes(searchQuery.toLowerCase()),
-      ) ||
-      talent.bio.toLowerCase().includes(searchQuery.toLowerCase());
-
-    // Skills filter
-    const matchesSkills =
-      filters.skills.length === 0 ||
-      filters.skills.some((filterSkill) =>
-        talent.skills.some((talentSkill) =>
-          talentSkill.toLowerCase().includes(filterSkill.toLowerCase()),
-        ),
-      );
-
-    // Location filter
-    const matchesLocation =
-      filters.location === "" || talent.location.includes(filters.location);
-
-    // Experience filter — parse lower bound from "6-8", "13+", etc.
-    const expYears = parseExperienceMin(talent.experience);
-    const matchesExperience =
-      expYears >= filters.experienceMin && expYears <= filters.experienceMax;
-
-    // Rate filter
-    const matchesRate =
-      talent.rate >= filters.rateMin && talent.rate <= filters.rateMax;
-
-    // Availability filter
-    const matchesAvailability =
-      filters.availability === "all" ||
-      talent.availability === filters.availability;
-
-    // Remote work filter
-    const matchesRemote = !filters.remote || talent.openToRemote;
-
-    // Contract work filter
-    const matchesContract = !filters.contract || talent.openToContract;
-
-    // Rating filter
-    const matchesRating =
-      filters.rating === 0 || (talent.rating ?? 0) >= filters.rating;
-
-    return (
-      matchesSearch &&
-      matchesSkills &&
-      matchesLocation &&
-      matchesExperience &&
-      matchesRate &&
-      matchesAvailability &&
-      matchesRemote &&
-      matchesContract &&
-      matchesRating
-    );
-  });
-
-  // Sorting logic
-  const sortedTalent = [...filteredTalent].sort((a, b) => {
-    switch (sortBy) {
-      case "rating":
-        return (b.rating ?? 0) - (a.rating ?? 0);
-      case "rate-low":
-        return a.rate - b.rate;
-      case "rate-high":
-        return b.rate - a.rate;
-      case "experience":
-        return (
-          parseExperienceMin(b.experience) - parseExperienceMin(a.experience)
-        );
-      case "recent":
-        return (
-          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
-      default:
-        return 0; // relevance
-    }
-  });
 
   const addSkillFilter = (skill: string) => {
     if (!filters.skills.includes(skill)) {
@@ -219,9 +180,7 @@ export default function SearchPage() {
   };
 
   const saveSearch = () => {
-    const searchName = `${searchQuery || "All talent"} - ${
-      filteredTalent.length
-    } results`;
+    const searchName = `${searchQuery || "All talent"} - ${total} results`;
     setSavedSearches((prev) => [...prev, searchName]);
     alert("Search saved!");
   };
@@ -517,7 +476,7 @@ export default function SearchPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-muted-foreground">
-              Showing {sortedTalent.length} of {talents.length} professionals
+              Showing {items.length} of {isLoading ? "…" : total} professionals
               {searchQuery && (
                 <span>
                   {" "}
@@ -526,14 +485,13 @@ export default function SearchPage() {
               )}
             </p>
           </div>
-          {sortedTalent.length > 0 && (
+          {items.length > 0 && (
             <div className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
               <span className="text-sm text-muted-foreground">
                 Avg. rate: $
                 {Math.round(
-                  sortedTalent.reduce((sum, t) => sum + t.rate, 0) /
-                    sortedTalent.length,
+                  items.reduce((sum, t) => sum + t.rate, 0) / items.length,
                 )}
                 /hr
               </span>
@@ -542,9 +500,32 @@ export default function SearchPage() {
         </div>
 
         {/* Results Grid */}
-        {sortedTalent.length > 0 ? (
+        {isLoading ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sortedTalent.map((talent) => (
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-border/60 p-6 space-y-4"
+              >
+                <div className="flex gap-4">
+                  <div className="h-12 w-12 rounded-full skeleton" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-32 skeleton" />
+                    <div className="h-3 w-24 skeleton" />
+                  </div>
+                </div>
+                <div className="h-3 w-full skeleton" />
+                <div className="h-3 w-3/4 skeleton" />
+                <div className="flex gap-2">
+                  <div className="h-6 w-16 skeleton" />
+                  <div className="h-6 w-16 skeleton" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : items.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items.map((talent) => (
               <Card key={talent.id} className="card-hover">
                 <CardHeader>
                   <div className="flex items-start gap-4">
@@ -656,10 +637,15 @@ export default function SearchPage() {
         )}
 
         {/* Load More */}
-        {sortedTalent.length > 0 && sortedTalent.length >= 6 && (
+        {items.length < total && (
           <div className="text-center mt-8">
-            <Button variant="outline" size="lg">
-              Load More Results
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={handleLoadMore}
+              disabled={isFetchingMore}
+            >
+              {isFetchingMore ? "Loading…" : "Load More Results"}
             </Button>
           </div>
         )}

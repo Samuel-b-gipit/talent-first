@@ -1,4 +1,5 @@
 export type ApiResponse<T> = { data: T | null; error: string | null };
+export type PaginatedResponse<T> = { items: T[]; total: number };
 
 async function request<T>(
   url: string,
@@ -78,22 +79,32 @@ export const authApi = {
 
 export const talentsApi = {
   getAll: (params?: {
+    q?: string;
     skills?: string;
     location?: string;
+    experience?: string;
     minRate?: number;
     maxRate?: number;
+    availability?: string;
+    remote?: boolean;
+    contract?: boolean;
+    minRating?: number;
+    experienceMin?: number;
+    experienceMax?: number;
+    sortBy?: string;
+    page?: number;
+    pageSize?: number;
   }) => {
     const qs = params
       ? "?" +
         new URLSearchParams(
           Object.entries(params)
-            .filter(([, v]) => v !== undefined)
+            .filter(([, v]) => v !== undefined && v !== "")
             .map(([k, v]) => [k, String(v)]),
         ).toString()
       : "";
-    return api.get<TalentProfile[]>(`/api/talents${qs}`);
+    return api.get<PaginatedResponse<TalentProfile>>(`/api/talents${qs}`);
   },
-  getFeatured: () => api.get<TalentProfile[]>("/api/talents?limit=3"),
   getById: (id: string) => api.get<TalentProfile>(`/api/talents/${id}`),
   search: (q: string) =>
     api.get<TalentProfile[]>(`/api/talents/search?q=${encodeURIComponent(q)}`),
@@ -122,8 +133,10 @@ export const proposalsApi = {
 };
 
 export const savedTalentsApi = {
-  getByEmployer: (employerId: string) =>
-    api.get<SavedTalent[]>(`/api/saved-talents?employerId=${employerId}`),
+  getByEmployer: (employerId: string, page = 1, pageSize = 12) =>
+    api.get<PaginatedResponse<SavedTalent>>(
+      `/api/saved-talents?employerId=${employerId}&page=${page}&pageSize=${pageSize}`,
+    ),
   save: (employerId: string, talentId: string) =>
     api.post<SavedTalent>("/api/saved-talents", { employerId, talentId }),
   remove: (id: string) => api.del(`/api/saved-talents/${id}`),
@@ -145,13 +158,16 @@ export const analyticsApi = {
 };
 
 export const recommendationsApi = {
-  getForYou: (employerId: string) =>
-    api.get<TalentProfile[]>(
-      `/api/recommendations/for-you?employerId=${employerId}`,
+  getForYou: (employerId: string, page = 1, pageSize = 10) =>
+    api.get<PaginatedResponse<TalentProfile>>(
+      `/api/recommendations/for-you?employerId=${employerId}&page=${page}&pageSize=${pageSize}`,
     ),
-  getTrending: () => api.get<TalentProfile[]>(`/api/recommendations/trending`),
-  getSimilar: (employerId: string) =>
-    api.get<TalentProfile[]>(
-      `/api/recommendations/similar?employerId=${employerId}`,
+  getTrending: (page = 1, pageSize = 10) =>
+    api.get<PaginatedResponse<TalentProfile>>(
+      `/api/recommendations/trending?page=${page}&pageSize=${pageSize}`,
+    ),
+  getSimilar: (employerId: string, page = 1, pageSize = 10) =>
+    api.get<PaginatedResponse<TalentProfile>>(
+      `/api/recommendations/similar?employerId=${employerId}&page=${page}&pageSize=${pageSize}`,
     ),
 };

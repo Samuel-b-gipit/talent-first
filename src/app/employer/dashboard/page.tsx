@@ -67,6 +67,9 @@ export default function EmployerDashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [savedTalent, setSavedTalent] = useState<SavedTalentEntry[]>([]);
+  const [savedTotal, setSavedTotal] = useState(0);
+  const [savedPage, setSavedPage] = useState(1);
+  const [isFetchingMoreSaved, setIsFetchingMoreSaved] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -79,18 +82,38 @@ export default function EmployerDashboard() {
     proposalsApi.getByEmployer(user.id).then(({ data }) => {
       if (data) setProposals(data);
     });
-    savedTalentsApi.getByEmployer(user.id).then(({ data }) => {
+    savedTalentsApi.getByEmployer(user.id, 1, 12).then(({ data }) => {
       if (data) {
-        // Convert SavedTalent[] to SavedTalentEntry[]
         setSavedTalent(
-          data.map((s) => ({
+          data.items.map((s) => ({
             id: s.id,
-            talent: s.talent as TalentProfile, // s.talent may be undefined/null, but SavedTalentEntry expects TalentProfile
+            talent: s.talent as TalentProfile,
           })),
         );
+        setSavedTotal(data.total);
       }
     });
   }, [user]);
+
+  const handleLoadMoreSaved = () => {
+    if (!user) return;
+    const next = savedPage + 1;
+    setSavedPage(next);
+    setIsFetchingMoreSaved(true);
+    savedTalentsApi.getByEmployer(user.id, next, 12).then(({ data }) => {
+      if (data) {
+        setSavedTalent((prev) => [
+          ...prev,
+          ...data.items.map((s) => ({
+            id: s.id,
+            talent: s.talent as TalentProfile,
+          })),
+        ]);
+        setSavedTotal(data.total);
+      }
+      setIsFetchingMoreSaved(false);
+    });
+  };
 
   const handleUnsave = async (savedId: string) => {
     await savedTalentsApi.remove(savedId);
@@ -100,7 +123,7 @@ export default function EmployerDashboard() {
   const getStatusIcon = (status: string) => {
     switch (status.toLowerCase()) {
       case "pending":
-        return <Clock className="h-4 w-4 text-secondary" />;
+        return <Clock className="h-4 w-4 text-orange-500" />;
       case "accepted":
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "declined":
@@ -110,23 +133,21 @@ export default function EmployerDashboard() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-        return "secondary";
-      case "accepted":
-        return "default";
-      case "declined":
-        return "destructive";
-      default:
-        return "secondary";
-    }
+  const getStatusColor = (_status: string): "secondary" => {
+    return "secondary";
   };
 
   const getStatusClassName = (status: string) => {
-    if (status.toLowerCase() === "accepted")
-      return "bg-green-500 hover:bg-green-600 text-white border-green-500";
-    return "";
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "bg-orange-100 text-orange-700 border-orange-300 hover:bg-orange-100";
+      case "accepted":
+        return "bg-green-500 hover:bg-green-600 text-white border-green-500";
+      case "declined":
+        return "bg-red-100 text-red-700 border-red-300 hover:bg-red-100";
+      default:
+        return "";
+    }
   };
 
   return (
@@ -280,7 +301,9 @@ export default function EmployerDashboard() {
                       className="flex items-center gap-4 p-4 border border-border/60 rounded-xl hover:bg-muted/30 transition-colors"
                     >
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src="/placeholder.svg" />
+                        <AvatarImage
+                          src={proposal.talent?.talentProfile?.avatarUrl ?? ""}
+                        />
                         <AvatarFallback>
                           {(proposal.talent?.name ?? "?")
                             .split(" ")
@@ -339,7 +362,11 @@ export default function EmployerDashboard() {
                     <CardContent className="pt-6">
                       <div className="flex items-start gap-4">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src="/placeholder.svg" />
+                          <AvatarImage
+                            src={
+                              proposal.talent?.talentProfile?.avatarUrl ?? ""
+                            }
+                          />
                           <AvatarFallback>
                             {(proposal.talent?.name ?? "?")
                               .split(" ")
@@ -438,7 +465,6 @@ export default function EmployerDashboard() {
                 <Link href="/browse-talent">Find More Talent</Link>
               </Button>
             </div>
-
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {savedTalent.length === 0 ? (
                 <p className="col-span-3 text-center text-muted-foreground py-8">
@@ -455,9 +481,7 @@ export default function EmployerDashboard() {
                       <CardHeader>
                         <div className="flex items-start gap-4">
                           <Avatar className="h-12 w-12">
-                            <AvatarImage
-                              src={`/abstract-geometric-shapes.png?height=48&width=48&query=${talent.user?.name} headshot`}
-                            />
+                            <AvatarImage src={talent.avatarUrl ?? ""} />
                             <AvatarFallback>
                               {(talent.user?.name ?? "")
                                 .split(" ")
@@ -530,7 +554,18 @@ export default function EmployerDashboard() {
                   );
                 })
               )}
-            </div>
+            </div>{" "}
+            {savedTalent.length < savedTotal && (
+              <div className="text-center mt-4">
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMoreSaved}
+                  disabled={isFetchingMoreSaved}
+                >
+                  {isFetchingMoreSaved ? "Loading…" : "Load More"}
+                </Button>
+              </div>
+            )}{" "}
           </TabsContent>
 
           {/* Analytics Tab */}

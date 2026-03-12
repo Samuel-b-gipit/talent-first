@@ -44,6 +44,12 @@ export default function RecommendationsPage() {
   const [forYou, setForYou] = useState<TalentProfile[]>([]);
   const [trending, setTrending] = useState<TalentProfile[]>([]);
   const [similar, setSimilar] = useState<TalentProfile[]>([]);
+  const [forYouTotal, setForYouTotal] = useState(0);
+  const [trendingTotal, setTrendingTotal] = useState(0);
+  const [similarTotal, setSimilarTotal] = useState(0);
+  const [forYouPage, setForYouPage] = useState(1);
+  const [trendingPage, setTrendingPage] = useState(1);
+  const [similarPage, setSimilarPage] = useState(1);
   const [marketInsights, setMarketInsights] = useState<MarketInsight[]>([]);
   const [employerStats, setEmployerStats] = useState<EmployerStats | null>(
     null,
@@ -55,20 +61,62 @@ export default function RecommendationsPage() {
     const employerId = user.id;
     setIsLoading(true);
     Promise.all([
-      recommendationsApi.getForYou(employerId),
-      recommendationsApi.getTrending(),
-      recommendationsApi.getSimilar(employerId),
+      recommendationsApi.getForYou(employerId, 1),
+      recommendationsApi.getTrending(1),
+      recommendationsApi.getSimilar(employerId, 1),
       analyticsApi.getMarketInsights(),
       analyticsApi.getEmployerStats(employerId),
     ]).then(([fyRes, tRes, simRes, miRes, statsRes]) => {
-      if (fyRes.data) setForYou(fyRes.data);
-      if (tRes.data) setTrending(tRes.data);
-      if (simRes.data) setSimilar(simRes.data);
+      if (fyRes.data) {
+        setForYou(fyRes.data.items);
+        setForYouTotal(fyRes.data.total);
+      }
+      if (tRes.data) {
+        setTrending(tRes.data.items);
+        setTrendingTotal(tRes.data.total);
+      }
+      if (simRes.data) {
+        setSimilar(simRes.data.items);
+        setSimilarTotal(simRes.data.total);
+      }
       if (miRes.data) setMarketInsights(miRes.data.slice(0, 4));
       if (statsRes.data) setEmployerStats(statsRes.data);
       setIsLoading(false);
     });
   }, [user]);
+
+  const loadMoreForYou = () => {
+    if (!user) return;
+    const next = forYouPage + 1;
+    setForYouPage(next);
+    recommendationsApi.getForYou(user.id, next).then(({ data }) => {
+      if (data) {
+        setForYou((p) => [...p, ...data.items]);
+        setForYouTotal(data.total);
+      }
+    });
+  };
+  const loadMoreTrending = () => {
+    const next = trendingPage + 1;
+    setTrendingPage(next);
+    recommendationsApi.getTrending(next).then(({ data }) => {
+      if (data) {
+        setTrending((p) => [...p, ...data.items]);
+        setTrendingTotal(data.total);
+      }
+    });
+  };
+  const loadMoreSimilar = () => {
+    if (!user) return;
+    const next = similarPage + 1;
+    setSimilarPage(next);
+    recommendationsApi.getSimilar(user.id, next).then(({ data }) => {
+      if (data) {
+        setSimilar((p) => [...p, ...data.items]);
+        setSimilarTotal(data.total);
+      }
+    });
+  };
 
   const saveTalent = async (talentProfileId: string, talentName?: string) => {
     setSavedTalentIds((prev) => [...prev, talentProfileId]);
@@ -264,6 +312,13 @@ export default function RecommendationsPage() {
                     ))}
                   </div>
                 )}
+                {forYou.length < forYouTotal && (
+                  <div className="text-center mt-4">
+                    <Button variant="outline" onClick={loadMoreForYou}>
+                      Load More
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
               {/* Trending Tab */}
@@ -373,6 +428,13 @@ export default function RecommendationsPage() {
                     ))}
                   </div>
                 )}
+                {trending.length < trendingTotal && (
+                  <div className="text-center mt-4">
+                    <Button variant="outline" onClick={loadMoreTrending}>
+                      Load More
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
               {/* Similar Hires Tab */}
@@ -473,6 +535,13 @@ export default function RecommendationsPage() {
                         </CardContent>
                       </Card>
                     ))}
+                  </div>
+                )}
+                {similar.length < similarTotal && (
+                  <div className="text-center mt-4">
+                    <Button variant="outline" onClick={loadMoreSimilar}>
+                      Load More
+                    </Button>
                   </div>
                 )}
               </TabsContent>

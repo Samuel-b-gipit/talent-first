@@ -15,15 +15,24 @@ export async function GET(req: NextRequest) {
     );
   }
   const employerId = searchParams.get("employerId") || user.id;
+  const page = Math.max(1, Number(searchParams.get("page") ?? 1));
+  const pageSize = Math.min(
+    50,
+    Math.max(1, Number(searchParams.get("pageSize") ?? 12)),
+  );
   try {
-    const savedTalents = await prisma.savedTalent.findMany({
-      where: { employerId },
-      include: {
-        talent: { include: { user: true } },
-      },
-      orderBy: { savedDate: "desc" },
-    });
-    return NextResponse.json(savedTalents);
+    const where = { employerId };
+    const [total, items] = await Promise.all([
+      prisma.savedTalent.count({ where }),
+      prisma.savedTalent.findMany({
+        where,
+        include: { talent: { include: { user: true } } },
+        orderBy: { savedDate: "desc" },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+      }),
+    ]);
+    return NextResponse.json({ items, total });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch saved talents", details: error },
