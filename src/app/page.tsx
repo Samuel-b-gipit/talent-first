@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const revalidate = 3600; // Re-generate at most once per hour
 
 import { Button } from "@/components/ui/button";
 import {
