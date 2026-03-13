@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { verifySession } from "@/lib/auth";
+import { ProfileSidebarActions } from "./ProfileSidebarActions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,10 +21,44 @@ import {
   Github,
   Linkedin,
   Globe,
-  Mail,
-  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
+
+// ISR: cache the full rendered HTML for 60 s, then revalidate in the background.
+// This works because the page has NO cookies()/headers() calls — those would force
+// the route to be permanently dynamic and skip the Full Route Cache entirely.
+export const revalidate = 60;
+
+// Cache profile data for 60 s — results are shared across all users viewing
+// the same profile, so the DB is only hit once per minute per profile ID.
+const getProfile = unstable_cache(
+  (id: string) =>
+    prisma.talentProfile.findFirst({
+      where: { OR: [{ id }, { userId: id }] },
+      include: { user: true },
+    }),
+  ["talent-profile"],
+  { revalidate: 60, tags: ["talent-profile"] }
+);
+
+const getSimilarTalent = unstable_cache(
+  (profileId: string, skills: string[]) =>
+    prisma.talentProfile.findMany({
+      where: {
+        id: { not: profileId },
+        skills: { hasSome: skills.slice(0, 2) },
+      },
+      take: 2,
+      select: {
+        id: true,
+        title: true,
+        rate: true,
+        user: { select: { name: true } },
+      },
+    }),
+  ["similar-talent"],
+  { revalidate: 60 }
+);
 
 export default async function ProfilePage({
   params,
@@ -32,32 +67,10 @@ export default async function ProfilePage({
 }) {
   const { id } = await params;
 
-  const [profile, currentUser] = await Promise.all([
-    prisma.talentProfile.findFirst({
-      where: { OR: [{ id }, { userId: id }] },
-      include: { user: true },
-    }),
-    verifySession(),
-  ]);
-
+  const profile = await getProfile(id);
   if (!profile) notFound();
 
-  const isEmployer = currentUser?.role === "EMPLOYER";
-  const isOwnProfile = currentUser?.id === profile.userId;
-
-  const similarTalent = await prisma.talentProfile.findMany({
-    where: {
-      id: { not: profile.id },
-      skills: { hasSome: profile.skills.slice(0, 2) },
-    },
-    take: 2,
-    select: {
-      id: true,
-      title: true,
-      rate: true,
-      user: { select: { name: true } },
-    },
-  });
+  const similarTalent = await getSimilarTalent(profile.id, profile.skills);
 
   const joinedDate = new Date(profile.createdAt).toLocaleDateString("en-US", {
     month: "long",
@@ -241,48 +254,11 @@ export default async function ProfilePage({
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Contact Card — only visible to employers viewing someone else's profile */}
-            {isEmployer && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    Contact {profile.user?.name?.split(" ")[0]}
-                  </CardTitle>
-                  <CardDescription>Send a proposal or message</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <Button className="w-full" size="lg" asChild>
-                    <Link href={`/send-proposal/${profile.userId}`}>
-                      <Mail className="mr-2 h-4 w-4" />
-                      Send Proposal
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link href={`/send-proposal/${profile.userId}`}>
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Send Message
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Own profile edit card — visible to the talent who owns this profile */}
-            {isOwnProfile && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Your Profile</CardTitle>
-                  <CardDescription>
-                    Manage how employers see you
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button className="w-full" asChild>
-                    <Link href="/create-profile">Edit Profile</Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+            {/* Auth-dependent actions (contact / edit) rendered client-side from AuthContext */}
+            <ProfileSidebarActions
+              profileUserId={profile.userId}
+              ownerFirstName={profile.user?.name?.split(" ")[0] ?? ""}
+            />
 
             {/* Stats Card */}
             <Card>

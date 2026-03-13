@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { prisma } from "./prisma";
 import crypto from "crypto";
+import { cache } from "react";
 
 const SESSION_COOKIE_NAME = "session_token";
 const SESSION_EXPIRY_DAYS = 7;
@@ -55,7 +56,9 @@ export async function getSessionToken() {
   return cookieStore.get(SESSION_COOKIE_NAME)?.value;
 }
 
-export async function verifySession() {
+// Wrapped with React cache() so multiple calls within the same server render
+// (e.g. layout + page both calling verifySession) hit the DB only once.
+export const verifySession = cache(async () => {
   const token = await getSessionToken();
   if (!token) return null;
 
@@ -73,7 +76,7 @@ export async function verifySession() {
   }
 
   return session.user;
-}
+}); 
 
 export async function deleteSession() {
   const token = await getSessionToken();
