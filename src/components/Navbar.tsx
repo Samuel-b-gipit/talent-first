@@ -55,11 +55,11 @@ export function Navbar() {
             </span>
           </Link>
 
-          {/* Right side — only render once auth state is known */}
-          {!isLoading && (
-            <div className="flex items-center gap-2">
+          {/* Right side — show unauthenticated nav immediately; hide authenticated
+              nav until auth state resolves to avoid a flash of wrong content */}
+          <div className="flex items-center gap-2">
               {/* Unauthenticated */}
-              {!user && (
+              {(!user || isLoading) && (
                 <>
                   <nav className="hidden md:flex items-center gap-1 mr-3">
                     <Link
@@ -91,7 +91,7 @@ export function Navbar() {
               )}
 
               {/* Employer */}
-              {user?.role === "EMPLOYER" && (
+              {!isLoading && user?.role === "EMPLOYER" && (
                 <>
                   <Button variant="ghost" asChild>
                     <Link href="/browse-talent">Browse Talent</Link>
@@ -142,7 +142,7 @@ export function Navbar() {
               )}
 
               {/* Talent */}
-              {user?.role === "TALENT" && (
+              {!isLoading && user?.role === "TALENT" && (
                 <>
                   <Button variant="outline" asChild>
                     <Link href="/proposals">My Proposals</Link>
@@ -186,7 +186,6 @@ export function Navbar() {
                 </>
               )}
             </div>
-          )}
         </div>
       </div>
     </header>
