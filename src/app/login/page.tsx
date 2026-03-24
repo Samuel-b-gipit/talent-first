@@ -59,11 +59,9 @@ export default function LoginPage() {
       setIsLoading(false);
       return;
     }
-    if (user.role === "EMPLOYER") {
-      router.push("/employer/dashboard");
-    } else {
-      router.push("/recommendations");
-    }
+    const destination =
+      user.role === "EMPLOYER" ? "/employer/dashboard" : "/recommendations";
+    window.location.href = destination;
   };
 
   return (

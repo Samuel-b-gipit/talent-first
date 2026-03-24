@@ -71,13 +71,11 @@ export function AuthProvider({
 
   const refreshUser = useCallback(async () => {
     try {
-      const { data, error } = await authApi.me();
+      const { data } = await authApi.me();
       const fetchedUser = data?.user ?? null;
       setUser(fetchedUser);
       let newCompanyName = "";
-      if (!fetchedUser) {
-        if (error) await authApi.logout();
-      } else if (fetchedUser.role === "EMPLOYER") {
+      if (fetchedUser?.role === "EMPLOYER") {
         const { data: companyData } = await companiesApi.getById(
           fetchedUser.id,
         );
@@ -87,7 +85,6 @@ export function AuthProvider({
     } catch {
       setUser(null);
       setCompanyName("");
-      await authApi.logout();
     }
   }, []);
 

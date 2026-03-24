@@ -58,134 +58,135 @@ export function Navbar() {
           {/* Right side — show unauthenticated nav immediately; hide authenticated
               nav until auth state resolves to avoid a flash of wrong content */}
           <div className="flex items-center gap-2">
-              {/* Unauthenticated */}
-              {(!user || isLoading) && (
-                <>
-                  <nav className="hidden md:flex items-center gap-1 mr-3">
-                    <Link
-                      href="/browse-talent"
-                      className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium"
-                    >
-                      Browse Talent
-                    </Link>
-                    <Link
-                      href="/for-employers"
-                      className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium"
-                    >
-                      For Employers
-                    </Link>
-                    <Link
-                      href="/how-it-works"
-                      className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium"
-                    >
-                      How It Works
-                    </Link>
-                  </nav>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link href="/login">Sign In</Link>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <Link href="/signup">Get Started</Link>
-                  </Button>
-                </>
-              )}
+            {/* Unauthenticated */}
+            {(!user || isLoading) && (
+              <>
+                <nav className="hidden md:flex items-center gap-1 mr-3">
+                  <Link
+                    href="/browse-talent"
+                    prefetch={false}
+                    className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium"
+                  >
+                    Browse Talent
+                  </Link>
+                  <Link
+                    href="/for-employers"
+                    className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium"
+                  >
+                    For Employers
+                  </Link>
+                  <Link
+                    href="/how-it-works"
+                    className="text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted text-sm font-medium"
+                  >
+                    How It Works
+                  </Link>
+                </nav>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href="/login">Sign In</Link>
+                </Button>
+                <Button size="sm" asChild>
+                  <Link href="/signup">Get Started</Link>
+                </Button>
+              </>
+            )}
 
-              {/* Employer */}
-              {!isLoading && user?.role === "EMPLOYER" && (
-                <>
-                  <Button variant="ghost" asChild>
-                    <Link href="/browse-talent">Browse Talent</Link>
-                  </Button>
-                  <Button variant="ghost" asChild>
-                    <Link href="/recommendations">Recommendations</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href="/employer/dashboard">Dashboard</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href="/employer/profile">Company Profile</Link>
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Avatar className="h-8 w-8 cursor-pointer">
-                        <AvatarImage src={user.avatarUrl ?? ""} />
-                        <AvatarFallback>
-                          {user.name?.[0]?.toUpperCase() ?? "E"}
-                        </AvatarFallback>
-                      </Avatar>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuLabel className="font-normal">
-                        <p className="font-medium text-sm">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {user.email}
-                        </p>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href="/employer/profile">
-                          <User className="mr-2 h-4 w-4" />
-                          Profile
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={logout}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              )}
+            {/* Employer */}
+            {!isLoading && user?.role === "EMPLOYER" && (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/browse-talent">Browse Talent</Link>
+                </Button>
+                <Button variant="ghost" asChild>
+                  <Link href="/recommendations">Recommendations</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href="/employer/dashboard">Dashboard</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href="/employer/profile">Company Profile</Link>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="h-8 w-8 cursor-pointer">
+                      <AvatarImage src={user.avatarUrl ?? ""} />
+                      <AvatarFallback>
+                        {user.name?.[0]?.toUpperCase() ?? "E"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel className="font-normal">
+                      <p className="font-medium text-sm">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/employer/profile">
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={logout}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
 
-              {/* Talent */}
-              {!isLoading && user?.role === "TALENT" && (
-                <>
-                  <Button variant="outline" asChild>
-                    <Link href="/proposals">My Proposals</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href={`/profile/${user.id}`}>My Profile</Link>
-                  </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Avatar className="h-8 w-8 cursor-pointer">
-                        <AvatarImage src={user.avatarUrl ?? ""} />
-                        <AvatarFallback>
-                          {user.name?.[0]?.toUpperCase() ?? "T"}
-                        </AvatarFallback>
-                      </Avatar>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-48">
-                      <DropdownMenuLabel className="font-normal">
-                        <p className="font-medium text-sm">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {user.email}
-                        </p>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link href={`/profile/${user.id}`}>
-                          <User className="mr-2 h-4 w-4" />
-                          My Profile
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={logout}
-                        className="text-destructive focus:text-destructive"
-                      >
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              )}
-            </div>
+            {/* Talent */}
+            {!isLoading && user?.role === "TALENT" && (
+              <>
+                <Button variant="outline" asChild>
+                  <Link href="/proposals">My Proposals</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href={`/profile/${user.id}`}>My Profile</Link>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="h-8 w-8 cursor-pointer">
+                      <AvatarImage src={user.avatarUrl ?? ""} />
+                      <AvatarFallback>
+                        {user.name?.[0]?.toUpperCase() ?? "T"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel className="font-normal">
+                      <p className="font-medium text-sm">{user.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href={`/profile/${user.id}`}>
+                        <User className="mr-2 h-4 w-4" />
+                        My Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={logout}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </header>
