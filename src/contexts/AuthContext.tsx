@@ -146,8 +146,8 @@ export function AuthProvider({
     await authApi.logout();
     setUser(null);
     setCompanyName("");
-    router.push("/login");
-  }, [router]);
+    window.location.href = "/login";
+  }, []);
 
   const contextValue = useMemo(
     () => ({
